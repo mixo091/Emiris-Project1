@@ -31,6 +31,9 @@ VectorList* VectorList_Init(int Dimension){
 
 //Double ** because we change the list itme inside the function. 
 void VectorList_Insert(VectorList** list,vector<int> new_vector){
+    if ( (*list)->dimension != new_vector.size() ) {
+        cout<<"ERROR:This vector can not be inserted b/c it has different dimension"<<endl;
+    }
     VectorNode * new_node = Create_VectorNode(new_vector, NULL);
     new_node->next=(*list)->head;
     (*list)->head=new_node;
