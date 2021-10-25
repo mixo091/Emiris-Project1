@@ -7,12 +7,7 @@
 #include "./Utilities/Utilities.h"
 //#include "./VectorList/VectorList.h"
 
-
-
-
 using namespace std;
-
-
 int main(int argc, char **argv){
 
     string input_file, out_file, qr_file;
@@ -20,10 +15,6 @@ int main(int argc, char **argv){
     int totalVectors = 0; //Total points in space
     int Dimension = 0;
     std::cout <<"Project starts..."<<endl;
- 
-    input_file = argv[2];
-    cout<<input_file<<endl;
-
     /*Space is a list of vectors that represents 
     the points at the Space with dimension <Dimension> */ 
     //Handling the args for The LSH. 
@@ -32,10 +23,12 @@ int main(int argc, char **argv){
         cerr << "Something wrong with arguments!";
         exit(err_no);
     } 
-
     //Checking input.
     cout<<"Files :: Input file: "<<input_file<<" Output file: "<<out_file<<" Query file:"<<qr_file<<endl;
     cout<<"k:"<<k<<" L:"<<L<<" N:"<<N<<" R:"<<R<<endl;
+
+    //Get the data(points) given
+    Data* dataset = parseData(input_file, Dimension, totalVectors);
 
     /*Space is a list of vectors that represents 
     the points at the Space with dimension <Dimension> */ 
@@ -55,8 +48,6 @@ int main(int argc, char **argv){
 
     HashTable ht = HashTable(10);
     ht.DisplayHT();
-
-
     return 0 ;
 }
 
