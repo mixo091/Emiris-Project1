@@ -1,10 +1,12 @@
-Project1: main.o VectorList.o    
-	g++ main.o VectorList.o  -o Project1
+Project1: main.o VectorList.o HashTable.o
+	g++ main.o VectorList.o HashTable.o -o Project1
 
 main.o: main.cpp
 	g++ -c main.cpp
-
 VectorList.o: ./VectorList/VectorList.cpp ./VectorList/VectorList.h
 	g++ -c ./VectorList/VectorList.cpp
+
+HashTable.o: ./HashTable/HashTable.cpp ./HashTable/HashTable.h
+	g++ -c ./HashTable/HashTable.cpp
 clean:
 	rm*.o Project1

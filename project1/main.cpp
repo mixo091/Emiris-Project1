@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
-#include "./VectorList/VectorList.h"
+#include "./HashTable/HashTable.h"
+//#include "./VectorList/VectorList.h"
+
 using namespace std;
 
 
@@ -22,6 +24,9 @@ int main(){
     vector<int> vector5 = {4243,353,56,37};
     VectorList_Insert(&Space,vector5);
     VectorList_Print(Space);
+
+    HashTable ht = HashTable(10);
+    ht.DisplayHT();
 
 
     return 0 ;
