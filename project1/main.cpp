@@ -3,8 +3,8 @@
 #include <string.h>
 #include <sstream>
 #include <fstream>
-#include "./HashTable/HashTable.h"
 #include "./Utilities/Utilities.h"
+#include "./LSH/lsh.h"
 //#include "./VectorList/VectorList.h"
 
 using namespace std;
