@@ -19,6 +19,10 @@ void Calc_LSH_needs(int *, int *,string);
 /* Creating the data set given the input file */
 Data* parseData(string , int , int );
 /* Computing and returning vector v of hash function */
+// template <typename T>
+// void normal_distribution_fun(float, float);
+template <typename T>
+void normal_distribution_fun(vector<T> , float, float);
 void normal_distribution_fun(double *, float, float);
 /* Easy to understand */
 template <typename K>

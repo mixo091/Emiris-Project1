@@ -130,17 +130,19 @@ double euclidean_dist(const K &v1, const K &v2)
     return sqrt(dist);
 }
 
-void normal_distribution_fun(float x, float y) {
+void normal_distribution_fun(double *n, float x, float y) {
     unsigned seed = chrono::steady_clock::now().time_since_epoch().count(); 
     default_random_engine e (seed); 
   
     /* declaring normal distribution object 'distN' and initializing its mean and standard deviation fields. */
     /* Mean and standard deviation are distribution parameters of Normal distribution. Here, we have used mean=5, and standard deviation=2. You can take mean and standard deviation as per your choice */
     normal_distribution<double> distN(x, y);
+
+    *n  = distN(e);
 }
 
 template <typename T>
-void normal_distribution_fun(vector<T> *v, const T &x, const T& y) {
+void normal_distribution_fun(vector<T> v, const T &x, const T& y) {
     unsigned seed = chrono::steady_clock::now().time_since_epoch().count(); 
     default_random_engine e (seed);
     normal_distribution<T> distN(x, y);
