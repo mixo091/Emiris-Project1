@@ -3,17 +3,18 @@
 #include <string.h>
 #include <sstream>
 #include <fstream>
-#include "./Utilities/Utilities.h"
-#include "./LSH/lsh.h"
+
+#include "./Utilities/Utilities.hpp"
+#include "./LSH/lsh.hpp"
 //#include "./VectorList/VectorList.h"
 
 using namespace std;
 int main(int argc, char **argv){
 
     string input_file, out_file, qr_file;
-    int k, L, N, R;
+    int k = 4, L = 5, N = 1, R = 10000, w = 4;
     int totalVectors = 0; //Total points in space
-    int Dimension = 0;
+    int dimension = 0;
     std::cout <<"Project starts..."<<endl;
     /*Space is a list of vectors that represents 
     the points at the Space with dimension <Dimension> */ 
@@ -23,31 +24,15 @@ int main(int argc, char **argv){
         cerr << "Something wrong with arguments!";
         exit(err_no);
     } 
-    //Checking input.
-    cout<<"Files :: Input file: "<<input_file<<" Output file: "<<out_file<<" Query file:"<<qr_file<<endl;
-    cout<<"k:"<<k<<" L:"<<L<<" N:"<<N<<" R:"<<R<<endl;
+
+    // Get the dimension of a vector and the total amount of data
+    Calc_LSH_needs(&totalVectors, &dimension, input_file);
 
     //Get the data(points) given
-    Data* dataset = parseData(input_file, Dimension, totalVectors);
+    Data<double> *dataset = parseData(input_file, dimension, totalVectors);
+    
+    Lsh<double> lsh = Lsh<double>(L, totalVectors, dimension, k, w, dataset);
 
-    /*Space is a list of vectors that represents 
-    the points at the Space with dimension <Dimension> */ 
-
-    VectorList* Space = VectorList_Init(Dimension);
-    vector<int> vector1 = {3,5,6,7};
-    VectorList_Insert(&Space,vector1);
-    vector<int> vector2 = {323,55,643,437};
-    VectorList_Insert(&Space,vector2);
-    vector<int> vector3 = {34,65,621,75};
-    VectorList_Insert(&Space,vector3);
-    vector<int> vector4 = {13,15,16,37};
-    VectorList_Insert(&Space,vector4);
-    vector<int> vector5 = {4243,353,56,37};
-    VectorList_Insert(&Space,vector5);
-    VectorList_Print(Space);
-
-    HashTable ht = HashTable(10);
-    ht.DisplayHT();
     return 0 ;
 }
 
