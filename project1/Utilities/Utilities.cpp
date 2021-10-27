@@ -49,6 +49,44 @@ int Handle_LSH_args (
     return 1;
 }
 
+Data<double>* parseData(string filename, int dim, int totalVectors) {
+    // open file for reading
+    ifstream input_file(filename);  
+    Data<double> *arr = new Data<double>[totalVectors];
+    // we need to count the Data created
+    int nVector = 0;
+    if(input_file.is_open()) {
+        string str;
+        while(getline(input_file, str)) {
+            // we need a counter for vector dimensions
+            int i = 0;
+            istringstream ss(str);
+            // we need to seperate coordinates and store them in a vector container
+            // store id
+            string id;
+            getline(ss, id, ' ');  
+            arr[nVector].setId(stoi(id));
+
+            string x_ij;
+            while(getline(ss, x_ij, ' ')) {
+                
+                if(i++ < dim) {
+                    // let's set our data
+                    arr[nVector].setVector(stod(x_ij));
+                }
+            }
+            nVector++;
+        }
+    } else {
+        cerr << "Unable to open file" << endl;
+        exit(-1);
+    }
+    // close the file 
+    input_file.close();
+
+    return arr;
+}
+
 int getVectorDim(string str) {
     stringstream ss(str);
     string temp;
@@ -59,7 +97,7 @@ int getVectorDim(string str) {
     return countDim;
 }
 
-void Cal_LSH_needs(int *tableSize, int *dim,string filename)
+void Calc_LSH_needs(int *tableSize, int *dim, string filename)
 {
     bool flag = true;
     ifstream input_file;   
@@ -77,57 +115,9 @@ void Cal_LSH_needs(int *tableSize, int *dim,string filename)
         cerr << "Unable to open file" << endl;
         exit(-1);
     }
-    cout << "hash table size = " << *tableSize << endl;
+
     // close the file 
     input_file.close();
-}
-
-Data* parseData(string filename, int dim, int totalVectors) {
-    ifstream input_file;  
-    Data *arr = new Data[totalVectors];
-    // we need to count the Data created
-    int nVector = 0;
-    input_file.open(filename.c_str());
-    if(input_file.is_open()) {
-        string str;
-        while(getline(input_file, str)) {
-            // we need a counter for vector dimensions
-            int i = 0;
-            istringstream ss(str);
-            // we need to seperate coordinates and store them in a vector container
-            // store id
-            string id;
-            getline(ss, id, ' ');  
-            arr[nVector].setId(stoi(id));
-            // cout << "id = " << id << "  ";
-            string x_ij;
-            while(getline(ss, x_ij, ' ')) {
-                // cout << "xij = " << x_ij << "   ";
-                if(i++ < dim) {
-                    // let's set our data
-                    arr[nVector].setVector(stod(x_ij));
-                }
-            }
-            nVector++;
-        }
-    } else {
-        cerr << "Unable to open file" << endl;
-        exit(-1);
-    }
-    // close the file 
-    input_file.close();
-    return arr;
-}
-
-template <typename K>
-double euclidean_dist(const K &v1, const K &v2) 
-{
-    double dist = 0;
-
-    for(unsigned int i = 0; i < v1.size(); i++) 
-        dist += pow(v1[i] - v2[i],  2);
-    
-    return sqrt(dist);
 }
 
 void normal_distribution_fun(double *n, float x, float y) {
@@ -141,26 +131,17 @@ void normal_distribution_fun(double *n, float x, float y) {
     *n  = distN(e);
 }
 
-template <typename T>
-void normal_distribution_fun(vector<T> v, const T &x, const T& y) {
-    unsigned seed = chrono::steady_clock::now().time_since_epoch().count(); 
-    default_random_engine e (seed);
-    normal_distribution<T> distN(x, y);
-
-    for(int i = 0; i < v.size(); i++)
-        v.push_back( distN(e) );
-
-}
-
 int modular_pow(int base, int exponent, int modulus)
 {
     int result = 1;
+    base = base % modulus;
+
     while (exponent > 0)
     {
-        if (exponent % 2 == 1)
-            result = (result * base) % modulus;
+        if(exponent & 1)
+            result = (result * base) & modulus;
         exponent = exponent >> 1;
-        base = (base * base) % modulus;
+        base = (base*base) % modulus;
     }
     return result;
 }
