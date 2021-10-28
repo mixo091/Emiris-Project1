@@ -87,7 +87,8 @@ public:
             
             sum += res;
         }
-        int index = positive_modulo(sum, tableSize);
+        unsigned int index = positive_modulo(sum, tableSize);
+
         return index;
     }
 };

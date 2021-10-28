@@ -4,6 +4,8 @@
 for ((i=0; i < 100; i++))
 do
 echo "This is the $i execution."
-./Project1 -i test_small -q query_small -o out_small
+sleep 0.5
+./Project1 -i input_small_id -q query_small -o out_small
 echo -e '\n'
+sleep 1
 done

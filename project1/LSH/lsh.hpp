@@ -19,7 +19,7 @@ private:
    HashTable<Data<T> *> **hash_tables; 
 public:
     Lsh(int L, int totalVectors, int dim, int k, int w, Data<T> *data)
-    : numberOfHashTables(L), ht_Size(totalVectors / 2), vecDimension(dim), numberOfHashFunctions(k), w(w)
+    : numberOfHashTables(L), ht_Size(totalVectors / 16), vecDimension(dim), numberOfHashFunctions(k), w(w)
     {   
         hash_tables = new HashTable<Data<T> *>*[numberOfHashTables];
         for(int i = 0; i < numberOfHashTables; i++) {

@@ -29,12 +29,12 @@ struct Bucket {
         bucketSize = 0;
         id = -1;
         next = NULL;
-        next = NULL;
     }
 
-    Bucket(K _key, int _id) {
+    Bucket(const K &_key, int _id) {
         key = key;
         id = _id;
+        next = NULL;
     }
 
     Bucket(const Bucket<K> &obj) {
@@ -78,7 +78,6 @@ public:
     void insert(Data<double> *key, const int &id) {
         unsigned int index = h_fun->hashValue(key->getVector(), table_size);
         cout << "Data with id " << id << " is to be inserted in index " << index << endl;
-       
        // check size of index
         assert(index <= INT_MAX);
 
