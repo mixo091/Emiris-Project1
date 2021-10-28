@@ -69,11 +69,12 @@ Data<double>* parseData(string filename, int dim, int totalVectors) {
 
             string x_ij;
             while(getline(ss, x_ij, ' ')) {
-                
-                if(i++ < dim) {
-                    // let's set our data
-                    arr[nVector].setVector(stod(x_ij));
-                }
+                // not a whitespace char
+                if(isspace(x_ij.at(0)) == 0)
+                    if(i++ < dim) {
+                        // let's set our data
+                        arr[nVector].setVector(stod(x_ij));
+                    }
             }
             nVector++;
         }
@@ -92,9 +93,11 @@ int getVectorDim(string str) {
     string temp;
     int countDim = 0;
     while(getline(ss, temp, ' ')) {
-        countDim++;
+        if(isspace(temp.at(0)) == 0)
+            countDim++;
     }
-    return countDim;
+
+    return countDim - 1; 
 }
 
 void Calc_LSH_needs(int *tableSize, int *dim, string filename)

@@ -28,10 +28,14 @@ int main(int argc, char **argv){
     // Get the dimension of a vector and the total amount of data
     Calc_LSH_needs(&totalVectors, &dimension, input_file);
 
+    // cout << "dimension = " << dimension << "vectors are " << totalVectors << endl;
+
     //Get the data(points) given
     Data<double> *dataset = parseData(input_file, dimension, totalVectors);
+    for(int i = 0; i < totalVectors; i++)
+        dataset[i].printVector();
     
-    Lsh<double> lsh = Lsh<double>(L, totalVectors, dimension, k, w, dataset);
+    // Lsh<double> lsh = Lsh<double>(L, totalVectors, dimension, k, w, dataset);
 
     return 0 ;
 }
