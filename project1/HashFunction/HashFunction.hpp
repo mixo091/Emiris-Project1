@@ -4,6 +4,9 @@
 #include <string.h>
 #include <chrono>
 #include <random>
+#include <climits>
+#include <math.h>
+#include <assert.h>     /* assert */
 
 #include "../Utilities/Utilities.hpp"
 
@@ -44,6 +47,7 @@ public:
 
         // calculate M , needed for modular operation
         int M = pow(2, 32 / num_of_hfun);
+
     }
 
     ~HashFunction() {
@@ -64,7 +68,7 @@ public:
 
         for(int i = 0; i < dim; i++)
             product += v[i] * p[i];
-        
+         
         return (int) floor( ( this->t + (double) product) / this->w);
 
     }
@@ -80,23 +84,10 @@ public:
             // we need to avoid overflow, so we use the formula from the slides
             // Recall (ab) mod m = ((a mod m)(b mod m)) mod m
             int res = modular_pow(h[i], r[i], M);
-
-            // cout << "h_i = " << h[i] << endl;
-            // cout << "r_i = " << r[i] << endl;
-            // cout << "res = " << res << endl;
             
-            if(res < 0) {
-                cerr << "Modular error" << endl;
-                exit(-1);
-            }
-
             sum += res;
         }
-
-        return sum % tableSize;
+        int index = positive_modulo(sum, tableSize);
+        return index;
     }
-
-    // int hfunction(vector<T> p);
-    // unsigned int hashValue(vector<T> p, int tableSize);
-
 };

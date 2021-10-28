@@ -149,3 +149,7 @@ int modular_pow(int base, int exponent, int modulus)
     return result;
 }
 
+unsigned positive_modulo( int value, unsigned m) {
+    return (value % m + m) % m;
+}
+

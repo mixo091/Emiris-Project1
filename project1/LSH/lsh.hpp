@@ -16,7 +16,7 @@ private:
     int numberOfHashFunctions;
     int w;
     
-   HashTable<Data<T> *>** hash_tables; 
+   HashTable<Data<T> *> **hash_tables; 
 public:
     Lsh(int L, int totalVectors, int dim, int k, int w, Data<T> *data)
     : numberOfHashTables(L), ht_Size(totalVectors / 2), vecDimension(dim), numberOfHashFunctions(k), w(w)
@@ -35,7 +35,7 @@ public:
 
     ~Lsh() {
         // for (int i = 0; i < numberOfHashTables; i++) 
-            // /delete[] hash_tables[i];
+        //     delete[] hash_tables[i];
         // delete[] hash_tables;
     }
 };

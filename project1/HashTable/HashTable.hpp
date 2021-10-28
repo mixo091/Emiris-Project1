@@ -5,6 +5,7 @@
 #include <list>
 #include <iterator>
 #include <bits/stdc++.h>
+#include <assert.h>
 
 #include "../VectorList/VectorList.hpp"
 #include "../Data/Data.hpp"
@@ -28,11 +29,25 @@ struct Bucket {
         bucketSize = 0;
         id = -1;
         next = NULL;
+        next = NULL;
     }
 
     Bucket(K _key, int _id) {
         key = key;
         id = _id;
+    }
+
+    Bucket(const Bucket<K> &obj) {
+        cout << "Copy constructor of Bucket." << endl;
+        
+        key = obj.key;
+        next = obj.next;
+        id = obj.id;
+    }
+
+    ~Bucket() {
+        delete key;
+        next = NULL;
     }
 };
 
@@ -63,6 +78,10 @@ public:
     void insert(Data<double> *key, const int &id) {
         unsigned int index = h_fun->hashValue(key->getVector(), table_size);
         cout << "Data with id " << id << " is to be inserted in index " << index << endl;
+       
+       // check size of index
+        assert(index <= INT_MAX);
+
         struct Bucket<K> *prev = NULL;
         struct Bucket<K> *entry = hash_table[index];
 
@@ -79,24 +98,23 @@ public:
             hash_table[index] = entry;
         else 
             prev->next = entry;
-
-            // cout << "mpike!\n";
     }
 
     ~HashTable() {
         // destroy all buckets one by one
-        for (int i = 0; i < table_size; ++i) {
+        for (int i = 0; i < table_size; i++) {
             Bucket<K> *temp = hash_table[i];
-            
             while (temp != NULL) {
+                cout << "exei skoupidia!\n" << endl;
                 Bucket<K> *prev = temp;
                 temp = temp->next;
+                
                 delete prev;
             }
             hash_table[i] = NULL;
         }
         // destroy the hash table
-        // delete [] hash_table;
+        delete [] hash_table;
 
         delete [] h_fun;
     }
