@@ -3,10 +3,9 @@
 #include <string.h>
 #include <sstream>
 #include <fstream>
-
 #include "./Utilities/Utilities.hpp"
 #include "./LSH/lsh.hpp"
-//#include "./VectorList/VectorList.h"
+
 
 using namespace std;
 int main(int argc, char **argv){
@@ -24,15 +23,14 @@ int main(int argc, char **argv){
         cerr << "Something wrong with arguments!";
         exit(err_no);
     } 
-
-    // Get the dimension of a vector and the total amount of data
+    cout<<"ok"<<endl;
+    //Get the dimension of a vector and the total amount of data
     Calc_LSH_needs(&totalVectors, &dimension, input_file);
-
     //Get the data(points) given
     Data<double> *dataset = parseData(input_file, dimension, totalVectors);
-    
+    //Initialize LSH.
     Lsh<double> lsh = Lsh<double>(L, totalVectors, dimension, k, w, dataset);
-
+    Print_HTs(lsh);
     return 0 ;
 }
 

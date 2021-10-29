@@ -5,7 +5,6 @@
 #include <list>
 #include <iterator>
 #include <bits/stdc++.h>
-#include "../VectorList/VectorList.hpp"
 #include "../Data/Data.hpp"
 #include "../HashFunction/HashFunction.hpp"
 
@@ -21,7 +20,6 @@ struct BucketEntry {
     struct BucketEntry *next;
 
     BucketEntry() {
-        bucketSize = 0;
         id = -1;
         next = NULL;
     }
@@ -69,6 +67,13 @@ public:
             hash_table[index] = entry;
         else 
             prev->next = entry;
+    }
+
+    void PrintHT(){
+        for (int i = 0; i < table_size; ++i) {
+            cout<<"++++++ BUCKET ["<<i<<"] ++++++"<<endl;
+            BucketEntry<K> *temp = hash_table[i];
+        } 
     }
 
     ~HashTable() {

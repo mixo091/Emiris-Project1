@@ -5,7 +5,6 @@
 #include <random>
 #include <chrono>
 #include <math.h>
-
 #include "Utilities.hpp"
 
 using namespace std;
@@ -83,7 +82,6 @@ Data<double>* parseData(string filename, int dim, int totalVectors) {
     }
     // close the file 
     input_file.close();
-
     return arr;
 }
 
@@ -115,8 +113,6 @@ void Calc_LSH_needs(int *tableSize, int *dim, string filename)
         cerr << "Unable to open file" << endl;
         exit(-1);
     }
-
-    // close the file 
     input_file.close();
 }
 
@@ -127,7 +123,6 @@ void normal_distribution_fun(double *n, float x, float y) {
     /* declaring normal distribution object 'distN' and initializing its mean and standard deviation fields. */
     /* Mean and standard deviation are distribution parameters of Normal distribution. Here, we have used mean=5, and standard deviation=2. You can take mean and standard deviation as per your choice */
     normal_distribution<double> distN(x, y);
-
     *n  = distN(e);
 }
 
@@ -135,7 +130,6 @@ int modular_pow(int base, int exponent, int modulus)
 {
     int result = 1;
     base = base % modulus;
-
     while (exponent > 0)
     {
         if(exponent & 1)
