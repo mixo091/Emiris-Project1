@@ -1,9 +1,8 @@
 #include <vector>
-
 #include "../Data/Data.hpp"
 #include "../HashTable/HashTable.hpp"
 #include "../HashFunction/HashFunction.hpp"
-
+#include <iostream>
 using namespace std;
 
 template <typename T>

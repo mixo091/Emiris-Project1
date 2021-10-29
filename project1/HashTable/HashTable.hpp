@@ -5,7 +5,6 @@
 #include <list>
 #include <iterator>
 #include <bits/stdc++.h>
-
 #include "../VectorList/VectorList.hpp"
 #include "../Data/Data.hpp"
 #include "../HashFunction/HashFunction.hpp"
@@ -14,23 +13,20 @@ using namespace std;
 /* A bucket is a list of points in space 
  In this case as in LSH we keep the points many times
  we will have a bucket as a list of pointers in points (vectors) */
-
-
 /* This is the bucket of our hash table */
 template <typename K>
-struct Bucket {
+struct BucketEntry {
     K key;
-    int bucketSize = 0;
     int id;
-    struct Bucket *next;
+    struct BucketEntry *next;
 
-    Bucket() {
+    BucketEntry() {
         bucketSize = 0;
         id = -1;
         next = NULL;
     }
 
-    Bucket(K _key, int _id) {
+    BucketEntry(K _key, int _id) {
         key = key;
         id = _id;
     }
@@ -39,57 +35,48 @@ struct Bucket {
 template <typename K>
 class HashTable
 {   
-    /* Number of buckets */
-    int buckets;
-    /* Hash table size */
-    int table_size;
-    struct Bucket<K> **hash_table ; 
-    /* Every hash table has it's own hash function */
-    HashFunction *h_fun;
+    int buckets_num; // Number of buckets .
+    int BucketSize;  // The size of the buckets.
+    int table_size;  // The size of the table.
+    struct BucketEntry<K> **hash_table ; 
+    HashFunction *h_fun; //The hashFunction of the table
 
 public:
     HashTable(int ht_size, int w, int k, int dim) 
     : table_size(ht_size) 
     {
-        // allocate the buckets.
-        hash_table = new Bucket<K>*[table_size];
+        //Allocating buckets.
+        hash_table = new BucketEntry<K>*[table_size];
         for(int i = 0; i < table_size; i++)
-            hash_table[i] = NULL;
-        
-        // create the hash function
+            hash_table[i] = NULL; 
+        //Creating the hash function
         h_fun = new HashFunction(w, k, dim);
     }
-
     void insert(Data<double> *key, const int &id) {
         unsigned int index = h_fun->hashValue(key->getVector(), table_size);
         cout << "Data with id " << id << " is to be inserted in index " << index << endl;
-        struct Bucket<K> *prev = NULL;
-        struct Bucket<K> *entry = hash_table[index];
-
+        struct BucketEntry<K> *prev = NULL;
+        struct BucketEntry<K> *entry = hash_table[index];
         while(entry != NULL) {
             prev = entry; 
             entry = entry->next;
         }
         if(entry == NULL) 
-            // do smthing
-            entry = new Bucket<K>(key, id);
-
+            //Create new Entry.
+            entry = new BucketEntry<K>(key, id);
         if(prev == NULL) 
-            // insert first
+            //Insert Fisrt Item.
             hash_table[index] = entry;
         else 
             prev->next = entry;
-
-            // cout << "mpike!\n";
     }
 
     ~HashTable() {
-        // destroy all buckets one by one
+        //Destroy all buckets one by one
         for (int i = 0; i < table_size; ++i) {
-            Bucket<K> *temp = hash_table[i];
-            
+            BucketEntry<K> *temp = hash_table[i]; 
             while (temp != NULL) {
-                Bucket<K> *prev = temp;
+                BucketEntry<K> *prev = temp;
                 temp = temp->next;
                 delete prev;
             }
@@ -97,9 +84,6 @@ public:
         }
         // destroy the hash table
         // delete [] hash_table;
-
         delete [] h_fun;
-    }
-
-    
+    }   
 };
