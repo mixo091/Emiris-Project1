@@ -4,6 +4,8 @@
 #include "../HashTable/HashTable.hpp"
 #include "../HashFunction/HashFunction.hpp"
 
+#define BUCKET_DIVIDER 16
+
 using namespace std;
 
 template <typename T>
@@ -19,7 +21,7 @@ private:
    HashTable<Data<T> *> **hash_tables; 
 public:
     Lsh(int L, int totalVectors, int dim, int k, int w, Data<T> *data)
-    : numberOfHashTables(L), ht_Size(totalVectors / 16), vecDimension(dim), numberOfHashFunctions(k), w(w)
+    : numberOfHashTables(L), ht_Size(totalVectors / BUCKET_DIVIDER), vecDimension(dim), numberOfHashFunctions(k), w(w)
     {   
         hash_tables = new HashTable<Data<T> *>*[numberOfHashTables];
         for(int i = 0; i < numberOfHashTables; i++) {
@@ -30,6 +32,13 @@ public:
         for(int i = 0; i < totalVectors; i++) {
             for(int j = 0; j < numberOfHashTables; j++) 
                 hash_tables[j]->insert(&data[i], data[i].id);
+        }
+    }
+
+    void PrintHTs(){
+        for(int j = 0; j < numberOfHashTables; j++){
+            cout <<"__ HASH TABLE ["<<j<<"] __"<<endl;
+            hash_tables[j]->PrintHT();
         }
     }
 

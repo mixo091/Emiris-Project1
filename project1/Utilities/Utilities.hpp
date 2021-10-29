@@ -40,4 +40,5 @@ double euclidean_dist(const K &v1, const K &v2)
 /* Modular exponetiation algorithm is used to avoid overflow
  Used in LSH to calculate  Recall (ab) mod m = ((a mod m)(b mod m)) mod m*/
 int modular_pow(int, int, int);
+int modular_power(int, int, int);
 unsigned positive_modulo( int, unsigned);

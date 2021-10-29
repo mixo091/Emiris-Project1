@@ -20,34 +20,31 @@ using namespace std;
 /* This is the bucket of our hash table */
 template <typename K>
 struct Bucket {
-    K key;
-    int bucketSize = 0;
+    // K key;
     int id;
-    struct Bucket *next;
+    int number_of_entries = 0;
+    // int id;
+    // struct Bucket *next;
+    list<K> bucket_entries; 
 
-    Bucket() {
-        bucketSize = 0;
-        id = -1;
-        next = NULL;
+    Bucket(int i) {
+        id = i;
+        number_of_entries = 0;
     }
 
-    Bucket(const K &_key, int _id) {
-        key = key;
-        id = _id;
-        next = NULL;
+    void insert(K key){
+        bucket_entries.push_back(key);
+        // increase list items
+        number_of_entries++;
     }
 
-    Bucket(const Bucket<K> &obj) {
-        cout << "Copy constructor of Bucket." << endl;
-        
-        key = obj.key;
-        next = obj.next;
-        id = obj.id;
-    }
-
-    ~Bucket() {
-        delete key;
-        next = NULL;
+    void displayBucket(){
+        cout<<"BUCKET ["<<id<<"] :"<<endl;
+        for(int i=0; i < number_of_entries; i++){
+            typename list<K>::iterator it = bucket_entries.begin();
+            advance(it, i); // 'it' points to the element at index i
+            (*it)->printVector();
+        }
     }
 };
 
@@ -61,7 +58,7 @@ class HashTable
     struct Bucket<K> **hash_table ; 
     /* Every hash table has it's own hash function */
     HashFunction *h_fun;
-
+ K key;
 public:
     HashTable(int ht_size, int w, int k, int dim) 
     : table_size(ht_size) 
@@ -69,7 +66,7 @@ public:
         // allocate the buckets.
         hash_table = new Bucket<K>*[table_size];
         for(int i = 0; i < table_size; i++)
-            hash_table[i] = NULL;
+            hash_table[i] = new Bucket<K>(i);
         
         // create the hash function
         h_fun = new HashFunction(w, k, dim);
@@ -77,46 +74,55 @@ public:
 
     void insert(Data<double> *key, const int &id) {
         unsigned int index = h_fun->hashValue(key->getVector(), table_size);
-        cout << "Data with id " << id << " is to be inserted in index " << index << endl;
+        // cout << "Data with id " << id << " is to be inserted in index " << index << endl;
        // check size of index
         assert(index <= INT_MAX);
+        assert(index <= 624);
+        hash_table[index]->insert(key);
 
-        struct Bucket<K> *prev = NULL;
-        struct Bucket<K> *entry = hash_table[index];
+        // struct Bucket<K> *prev = NULL;
+        // struct Bucket<K> *entry = hash_table[index];
 
-        while(entry != NULL) {
-            prev = entry; 
-            entry = entry->next;
-        }
-        if(entry == NULL) 
-            // do smthing
-            entry = new Bucket<K>(key, id);
+        // while(entry != NULL) {
+        //     prev = entry; 
+        //     entry = entry->next;
+        // }
+        // if(entry == NULL) {
+        //     // do smthing
+        //     entry = new Bucket<K>(key, id);
+        //     entry->printBucketEntry();
+        // }
 
-        if(prev == NULL) 
-            // insert first
-            hash_table[index] = entry;
-        else 
-            prev->next = entry;
+        // if(prev == NULL) 
+        //     // insert first
+        //     hash_table[index] = entry;
+        // else 
+        //     prev->next = entry;
     }
 
-    ~HashTable() {
-        // destroy all buckets one by one
-        for (int i = 0; i < table_size; i++) {
-            Bucket<K> *temp = hash_table[i];
-            while (temp != NULL) {
-                cout << "exei skoupidia!\n" << endl;
-                Bucket<K> *prev = temp;
-                temp = temp->next;
+    void PrintHT(){
+        for (int i = 0; i < table_size; ++i) {
+            cout<<"++++++ BUCKET ["<<i<<"] ++++++"<<endl;
+
+            hash_table[i]->displayBucket();
+        } 
+    }
+
+//     ~HashTable() {
+//         // destroy all buckets one by one
+//         for (int i = 0; i < table_size; i++) {
+//             Bucket<K> *temp = hash_table[i];
+//             while (temp != NULL) {
+//                 Bucket<K> *prev = temp;
+//                 temp = temp->next;
                 
-                delete prev;
-            }
-            hash_table[i] = NULL;
-        }
-        // destroy the hash table
-        delete [] hash_table;
+//                 delete prev;
+//             }
+//             hash_table[i] = NULL;
+//         }
+//         // destroy the hash table
+//         delete [] hash_table;
 
-        delete [] h_fun;
-    }
-
-    
+//         delete [] h_fun;
+//     }
 };

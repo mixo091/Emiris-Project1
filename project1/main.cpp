@@ -6,6 +6,7 @@
 
 #include "./Utilities/Utilities.hpp"
 #include "./LSH/lsh.hpp"
+#include "./HashTable/HashTable.hpp"
 //#include "./VectorList/VectorList.h"
 
 using namespace std;
@@ -29,9 +30,17 @@ int main(int argc, char **argv){
 
     // Get the data(points) given
     Data<double> *dataset = parseData(input_file, dimension, totalVectors);
+
+    HashTable<Data<double> *> ht(1000 / 16, w, k, dimension);
+    for(int i = 0; i < 1000; i++)
+        ht.insert(&dataset[i], dataset[i].id);
+    
+    // ht.PrintHT();
     
     // Initialise our lsh structure
-    Lsh<double> lsh = Lsh<double>(L, totalVectors, dimension, k, w, dataset);
+    // Lsh<double> lsh = Lsh<double>(L, totalVectors, dimension, k, w, dataset);
+    
+    // lsh.PrintHTs();
 
     return 0 ;
 }

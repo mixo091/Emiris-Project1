@@ -144,9 +144,20 @@ int modular_pow(int base, int exponent, int modulus)
         if(exponent & 1)
             result = (result * base) & modulus;
         exponent = exponent >> 1;
-        base = (base*base) % modulus;
+        base = (base*base);
     }
     return result;
+}
+
+int modular_power(int a, int b, int m)
+{
+    if(b == 0) return 1;
+    a = a % m;
+    int temp = modular_pow(a, b/2, m);
+    if(b&1)
+        return (((temp * temp) % m) * a) % m;
+    else
+        return (temp * temp) % m;
 }
 
 unsigned positive_modulo( int value, unsigned m) {
