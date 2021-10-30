@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <math.h>
+#include <ctime>
 
 #include "../Data/Data.hpp"
 
@@ -40,5 +41,17 @@ double euclidean_dist(const K &v1, const K &v2)
 /* Modular exponetiation algorithm is used to avoid overflow
  Used in LSH to calculate  Recall (ab) mod m = ((a mod m)(b mod m)) mod m*/
 int modular_pow(int, int, int);
-int modular_power(int, int, int);
-unsigned positive_modulo( int, unsigned);
+unsigned long positive_modulo( unsigned long, unsigned);
+/* This is a brute force method for NN, storing in a vector
+* the euclidean distance of a query and every point of the input file
+stored in dataset */
+template <typename T>
+void BruteForceNN(vector<double> qr_v,Data<T> *dataset, int data_size, vector<double> *brute_force_v) {
+    // for every vector in dataset, calculate euclidean distance 
+    for(int i = 0; i < data_size; i++) {
+        double eu_dist = euclidean_dist(qr_v, dataset[i].getVector());
+
+        // push eu_dist to our brute_force_v
+        brute_force_v->push_back(eu_dist);
+    }
+}

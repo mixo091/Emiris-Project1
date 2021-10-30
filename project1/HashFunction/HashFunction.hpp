@@ -46,7 +46,7 @@ public:
         normal_distribution_fun(&t, 0.0, (double) w);
 
         // calculate M , needed for modular operation
-        M = pow(2, 32 / num_of_hfun);
+        M = pow(2, 32 ) - 5;
     }
 
     ~HashFunction() {
@@ -72,26 +72,24 @@ public:
 
     }
 
-    unsigned int hashValue(vector<double> p, int tableSize) {
-        // this will be our Sum of h * r
-        int sum = 0;
-
+    unsigned int hashValue(vector<double> p, int tableSize, int *ID) {
+    
+        int amodM;
+        int bmodM;
         for(int i = 0; i < num_of_hfun; i++) {
-            // compute h(p)
-            this->h[i] = hfunction(p);
-            // cout << "h_i = " << h[i] << endl;
-            // we need to avoid overflow, so we use the formula from the slides
-            // Recall (ab) mod m = ((a mod m)(b mod m)) mod m
-            int res = modular_pow(h[i], r[i], M);
-            cout << "res = " << res << endl;
-            
-            sum += res;
+            h[i] = hfunction(p);
+            // avoid overflow
+            amodM = positive_modulo(h[i], M);
+            bmodM = positive_modulo(r[i], M);
+            int res = amodM * bmodM;
+
+            res = positive_modulo(res, M);
+
+            *ID += res;
         }
-        unsigned int index = sum % tableSize;
-        // positive_modulo(sum, tableSize);
 
-        cout << "index = " << index << endl;
-
-        return index;
+        unsigned int g = positive_modulo(*ID, tableSize);
+        
+        return g;
     }
 };

@@ -7,7 +7,6 @@
 #include "./Utilities/Utilities.hpp"
 #include "./LSH/lsh.hpp"
 #include "./HashTable/HashTable.hpp"
-//#include "./VectorList/VectorList.h"
 
 using namespace std;
 int main(int argc, char **argv){
@@ -16,9 +15,10 @@ int main(int argc, char **argv){
     int k = 4, L = 5, N = 1, R = 10000, w = 4;
     int totalVectors = 0; //Total points in space
     int dimension = 0;
+    int queryLines = 0, qrVectorDim;
     std::cout <<"Project starts..."<<endl;
 
-    //Handling the args for The LSH. 
+    // Handling the args for The LSH. 
     int err_no = Handle_LSH_args(argc, argv, &input_file,&qr_file, &out_file, &k, &L, &N, &R);
     if(err_no <= 0 ) {
         cerr << "Something wrong with arguments!";
@@ -30,17 +30,19 @@ int main(int argc, char **argv){
 
     // Get the data(points) given
     Data<double> *dataset = parseData(input_file, dimension, totalVectors);
-
-    HashTable<Data<double> *> ht(1000 / 16, w, k, dimension);
-    for(int i = 0; i < 1000; i++)
-        ht.insert(&dataset[i], dataset[i].id);
-    
-    // ht.PrintHT();
     
     // Initialise our lsh structure
-    // Lsh<double> lsh = Lsh<double>(L, totalVectors, dimension, k, w, dataset);
+    Lsh<double> lsh = Lsh<double>(L, totalVectors, dimension, k, w, dataset);
+
+    // Read from query file
+    Calc_LSH_needs(&queryLines, &qrVectorDim, qr_file);
+    assert(qrVectorDim == dimension);
     
-    // lsh.PrintHTs();
+    // Store query data
+    Data<double> *qr_data = parseData(qr_file, qrVectorDim, queryLines);
+    
+    // Execute query search
+    lsh.ANN(qr_data, queryLines, dataset, totalVectors, N, out_file);
 
     return 0 ;
 }

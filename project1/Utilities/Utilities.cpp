@@ -144,26 +144,22 @@ int modular_pow(int base, int exponent, int modulus)
         if(exponent & 1)
             result = (result * base) & modulus;
         exponent = exponent >> 1;
-        base = (base*base);
+        base = (base*base) % modulus;
     }
     return result;
 }
 
-int modular_power(int a, int b, int m)
-{
-    if(b == 0) return 1;
-    a = a % m;
-    int temp = modular_pow(a, b/2, m);
-    if(b&1)
-        return (((temp * temp) % m) * a) % m;
-    else
-        return (temp * temp) % m;
+long long inn_product(int *h, int *r, int dim) {
+    int product = 0;
+    for(int i = 0; i < dim; i++) 
+        product += h[i] * r[i];
+
+    return product;
+}   
+
+unsigned long positive_modulo( unsigned long x, unsigned y) {
+    return  ( ( x % y ) + y ) % y;
 }
 
-unsigned positive_modulo( int value, unsigned m) {
-    if(value < 0)
-        return (value % m + m) % m;
-    else 
-        return value % m;
-}
+
 

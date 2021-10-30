@@ -6,8 +6,9 @@
 #include <iterator>
 #include <bits/stdc++.h>
 #include <assert.h>
+#include <ctime>
+#include <map>
 
-#include "../VectorList/VectorList.hpp"
 #include "../Data/Data.hpp"
 #include "../HashFunction/HashFunction.hpp"
 
@@ -16,36 +17,56 @@ using namespace std;
  In this case as in LSH we keep the points many times
  we will have a bucket as a list of pointers in points (vectors) */
 
+template <typename K>
+struct BucketEntry {
+    /* ID: used from theory as Query Trick to avoid calculating Euclidean
+    * distance, betwween query and every point in Bucket */
+    int query_trick;
+    /* This is our key */
+    K key;
+
+    BucketEntry(K k, int ID) {
+        key = k;
+        query_trick = ID;
+    }
+
+    void print() {
+        Data<double> *data = (Data<double> *) key;
+        data->printVector();
+        cout << "ID(P) = " << query_trick << endl << endl;
+    }
+    int getQueryTrick() { return query_trick; }
+    vector<double> getVector() { return key->v; }
+    int getId() { return key->id; }
+};
 
 /* This is the bucket of our hash table */
 template <typename K>
 struct Bucket {
-    // K key;
+    int number_of_entries;
     int id;
-    int number_of_entries = 0;
-    // int id;
-    // struct Bucket *next;
-    list<K> bucket_entries; 
+    list<BucketEntry<K> *> bucket_entries; 
 
     Bucket(int i) {
         id = i;
         number_of_entries = 0;
     }
 
-    void insert(K key){
-        bucket_entries.push_back(key);
+    void insert(K key, int ID){
+        // struct BucketEntry bucket_entry = new BucketEntry<K>(key, ID);
+        bucket_entries.push_back(new BucketEntry<K>(key, ID));
         // increase list items
         number_of_entries++;
     }
 
-    void displayBucket(){
-        cout<<"BUCKET ["<<id<<"] :"<<endl;
-        for(int i=0; i < number_of_entries; i++){
-            typename list<K>::iterator it = bucket_entries.begin();
-            advance(it, i); // 'it' points to the element at index i
-            (*it)->printVector();
-        }
-    }
+    // void displayBucket(){
+    //     cout<<"BUCKET ["<<id<<"] :"<<endl;
+    //     for(int i=0; i < number_of_entries; i++){
+    //         typename list<K>::iterator it = bucket_entries.begin();
+    //         advance(it, i); // 'it' points to the element at index i
+    //         (*it)->printVector();
+    //     }
+    // }
 };
 
 template <typename K>
@@ -66,38 +87,65 @@ public:
         // allocate the buckets.
         hash_table = new Bucket<K>*[table_size];
         for(int i = 0; i < table_size; i++)
-            hash_table[i] = new Bucket<K>(i);
+            hash_table[i] = NULL;
         
         // create the hash function
         h_fun = new HashFunction(w, k, dim);
     }
 
     void insert(Data<double> *key, const int &id) {
-        unsigned int index = h_fun->hashValue(key->getVector(), table_size);
-        // cout << "Data with id " << id << " is to be inserted in index " << index << endl;
+        // this is used from theory as query trick
+        int query_trick = 0;
+        unsigned int index = h_fun->hashValue(key->getVector(), table_size, &query_trick);
        // check size of index
         assert(index <= INT_MAX);
-        assert(index <= 624);
-        hash_table[index]->insert(key);
 
-        // struct Bucket<K> *prev = NULL;
-        // struct Bucket<K> *entry = hash_table[index];
+        if(hash_table[index] != NULL) hash_table[index]->insert(key, query_trick);
+        else {
+            // create new Bucket and insert key
+            hash_table[index] = new Bucket<K>(index);
+            hash_table[index]->insert(key, query_trick);
+        }
+    }
 
-        // while(entry != NULL) {
-        //     prev = entry; 
-        //     entry = entry->next;
-        // }
-        // if(entry == NULL) {
-        //     // do smthing
-        //     entry = new Bucket<K>(key, id);
-        //     entry->printBucketEntry();
-        // }
+    void find_NN(Data<double> *q, map<double, int> &my_map , double *time_NN) {
+        double temp_min = INT_MAX;
+        int id = 0;
+        int query_trick = 0;
+        unsigned int index = h_fun->hashValue(q->getVector(), table_size, &query_trick);
+        // this is the bucket that q vector is hashed
+        struct Bucket<K> *bucket = hash_table[index];
+        // check if current bucket exist
+        if(bucket != NULL) {
+            // cout << "Bucket " << bucket->id << " with " << bucket->number_of_entries \
+            //                                             << " entries." << endl;
 
-        // if(prev == NULL) 
-        //     // insert first
-        //     hash_table[index] = entry;
-        // else 
-        //     prev->next = entry;
+            // we need to calculate the time
+            const clock_t begin_time = clock();
+            clock_t end_time;
+            // traverse the list of Data of current bucket
+            typename std::list<BucketEntry<K> *>::iterator it;
+            for (it = bucket->bucket_entries.begin(); it != bucket->bucket_entries.end(); ++it) {
+                // calculate euclidean_distance of q and every item in the list
+                if(query_trick == (*it)->getQueryTrick()) {
+
+                    double euDist = euclidean_dist(q->getVector(), (*it)->getVector());
+                    if(euDist < temp_min) {
+                        temp_min = euDist;
+                        //  hold the id
+                        id = (*it)->getId();
+
+                        // insert in map
+                        my_map.insert(pair<double, int>(temp_min, id));
+                    }
+                } else continue;
+                
+            }
+            end_time = clock();
+            
+            // calculate time
+            *time_NN = double(end_time - begin_time) / CLOCKS_PER_SEC;            
+        }
     }
 
     void PrintHT(){
