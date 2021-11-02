@@ -93,6 +93,8 @@ public:
         h_fun = new HashFunction(w, k, dim);
     }
 
+    // query_trick = (h_1 * r_1 ) mod M + (h2 * r_2) mod M.......
+
     void insert(Data<double> *key, const int &id) {
         // this is used from theory as query trick
         int query_trick = 0;
@@ -123,6 +125,7 @@ public:
             // we need to calculate the time
             const clock_t begin_time = clock();
             clock_t end_time;
+            
             // traverse the list of Data of current bucket
             typename std::list<BucketEntry<K> *>::iterator it;
             for (it = bucket->bucket_entries.begin(); it != bucket->bucket_entries.end(); ++it) {

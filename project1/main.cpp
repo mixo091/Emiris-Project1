@@ -12,7 +12,7 @@ using namespace std;
 int main(int argc, char **argv){
 
     string input_file, out_file, qr_file;
-    int k = 4, L = 5, N = 1, R = 10000, w = 4;
+    int k = 5, L = 7, N = 1, R = 10000, w = 4000;
     int totalVectors = 0; //Total points in space
     int dimension = 0;
     int queryLines = 0, qrVectorDim;

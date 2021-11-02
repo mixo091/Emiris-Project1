@@ -54,7 +54,7 @@ public:
         // create a map of <id, eu_dist> where id is int and eu_dist is double
         map<double, int> my_map;
 
-        for(int i = 0; i < 100; i++) {
+        for(int i = 0; i < qr_lines; i++) {
         
             double time_LSH = 0.0; // timer for LSH-NN
             double time_BF = 0.0; // timer for BF-NN
@@ -65,8 +65,8 @@ public:
             }
 
             int k = 0;
-            int item_id; 
-            double eu_dist;
+            int item_id = 0; 
+            double eu_dist = 0.0;
             // cout << "mymap contains:\n";
             for (auto it = my_map.cbegin(); it != my_map.cend(); ++it) {
                 // cout << "{" << (*it).first << ": " << (*it).second << "}\n";
@@ -74,6 +74,8 @@ public:
                 if(k == N) {
                     eu_dist = (*it).first;
                     item_id  = (*it).second;
+
+                    break;
                 }
             }
             // need to calculate the time taken for BF

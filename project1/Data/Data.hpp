@@ -27,7 +27,7 @@ struct Data
     void printVector() {
         cout << "id = " << id << endl;
         for(auto it = v.begin(); it < v.end(); it++) {
-            cout << *it << " ";
+            cout << *it << ",";
         } 
         cout << endl;
     }
