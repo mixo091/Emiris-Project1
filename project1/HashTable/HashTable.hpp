@@ -30,6 +30,10 @@ struct BucketEntry {
         query_trick = ID;
     }
 
+    ~BucketEntry() {
+
+    }
+
     void print() {
         Data<double> *data = (Data<double> *) key;
         data->printVector();
@@ -52,21 +56,27 @@ struct Bucket {
         number_of_entries = 0;
     }
 
+    ~Bucket() {
+        // cout << "Destructing Bucket...";
+        for(typename list<BucketEntry<K>*>::const_iterator it = bucket_entries.begin(); it != bucket_entries.end(); ++it)
+        {
+            delete *it;
+        } 
+        bucket_entries.clear();
+    }
+
     void insert(K key, int ID){
-        // struct BucketEntry bucket_entry = new BucketEntry<K>(key, ID);
         bucket_entries.push_back(new BucketEntry<K>(key, ID));
         // increase list items
         number_of_entries++;
     }
 
-    // void displayBucket(){
-    //     cout<<"BUCKET ["<<id<<"] :"<<endl;
-    //     for(int i=0; i < number_of_entries; i++){
-    //         typename list<K>::iterator it = bucket_entries.begin();
-    //         advance(it, i); // 'it' points to the element at index i
-    //         (*it)->printVector();
-    //     }
-    // }
+    void displayBucket(){
+        // cout<<"BUCKET ["<<id<<"] :"<<endl;
+        if(!bucket_entries.empty())
+            for(auto &it : bucket_entries)
+                it->key->printVector();
+    }
 };
 
 template <typename K>
@@ -79,11 +89,11 @@ class HashTable
     struct Bucket<K> **hash_table ; 
     /* Every hash table has it's own hash function */
     HashFunction *h_fun;
- K key;
 public:
     HashTable(int ht_size, int w, int k, int dim) 
     : table_size(ht_size) 
     {
+        cout << "Constructing hash table with size " << table_size << endl;
         // allocate the buckets.
         hash_table = new Bucket<K>*[table_size];
         for(int i = 0; i < table_size; i++)
@@ -93,12 +103,15 @@ public:
         h_fun = new HashFunction(w, k, dim);
     }
 
+    HashFunction *getHashFunction() { return h_fun; }
+
     // query_trick = (h_1 * r_1 ) mod M + (h2 * r_2) mod M.......
 
-    void insert(Data<double> *key, const int &id) {
+    void insert(Data<double> *key) {
         // this is used from theory as query trick
         int query_trick = 0;
         unsigned int index = h_fun->hashValue(key->getVector(), table_size, &query_trick);
+      
        // check size of index
         assert(index <= INT_MAX);
 
@@ -107,6 +120,14 @@ public:
             // create new Bucket and insert key
             hash_table[index] = new Bucket<K>(index);
             hash_table[index]->insert(key, query_trick);
+        }
+    }
+
+    void insertHyperCube(Data<double> *key, int index) {
+        if(hash_table[index] != NULL) hash_table[index]->insert(key, -1);
+        else {
+            hash_table[index] = new Bucket<K>(index);
+            hash_table[index]->insert(key, -1);
         }
     }
 
@@ -155,25 +176,27 @@ public:
         for (int i = 0; i < table_size; ++i) {
             cout<<"++++++ BUCKET ["<<i<<"] ++++++"<<endl;
 
-            hash_table[i]->displayBucket();
+            if(hash_table[i] != NULL)
+                hash_table[i]->displayBucket();
         } 
     }
 
-//     ~HashTable() {
-//         // destroy all buckets one by one
-//         for (int i = 0; i < table_size; i++) {
-//             Bucket<K> *temp = hash_table[i];
-//             while (temp != NULL) {
-//                 Bucket<K> *prev = temp;
-//                 temp = temp->next;
-                
-//                 delete prev;
-//             }
-//             hash_table[i] = NULL;
-//         }
-//         // destroy the hash table
-//         delete [] hash_table;
+    ~HashTable() {
+        cout << "Destructing Hashtable..." << endl;
+        Bucket<K> *temp = NULL;
+        for(int i = 0; i < table_size; i++) {
 
-//         delete [] h_fun;
-//     }
+            temp = hash_table[i];
+
+            if(temp != NULL) {
+                delete temp;
+            }
+
+            hash_table[i] = NULL;
+        }
+
+        delete[] hash_table;
+
+        delete h_fun;
+    }
 };

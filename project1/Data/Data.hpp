@@ -19,7 +19,7 @@ struct Data
     }
     Data(const Data<T> &obj) : id(obj.id), v(obj.v) {}
     Data(const long int &item_id, const T &key ) : id(item_id) { v.push_back(key); }
-    ~Data() {}
+    ~Data() { v.clear(); }
     void setId(const long int &item_id) { id = item_id; }
     void setVector( const T &d) {  v.push_back(d); }
     vector<T> getVector() { return v; }

@@ -13,7 +13,7 @@ using namespace std;
 template <typename T>
 class Lsh
 {
-private:
+protected:
     int numberOfHashTables;
     int ht_Size;
     int vecDimension;
@@ -22,8 +22,13 @@ private:
     
    HashTable<Data<T> *> **hash_tables; 
 public:
-    Lsh(int L, int totalVectors, int dim, int k, int w, Data<T> *data)
-    : numberOfHashTables(L), ht_Size(totalVectors / BUCKET_DIVIDER), vecDimension(dim), numberOfHashFunctions(k), w(w)
+    // this constructor is called for LSH
+    Lsh(int L, int totalVectors, int _dim, int _k, int _w, Data<T> *data)
+    :   numberOfHashTables(L), 
+        ht_Size(totalVectors / BUCKET_DIVIDER), 
+        vecDimension(_dim), 
+        numberOfHashFunctions(_k), 
+        w(_w)
     {   
         hash_tables = new HashTable<Data<T> *>*[numberOfHashTables];
         for(int i = 0; i < numberOfHashTables; i++) {
@@ -33,8 +38,23 @@ public:
         // with the use of hash function
         for(int i = 0; i < totalVectors; i++) {
             for(int j = 0; j < numberOfHashTables; j++) 
-                hash_tables[j]->insert(&data[i], data[i].id);
+                hash_tables[j]->insert(&data[i]);
+
         }
+    }
+    // this constructor is called for Hypercube
+    Lsh(int L, int _size, int _dim, int _k, int _w)
+    :   numberOfHashTables(L), 
+        ht_Size(_size), 
+        vecDimension(_dim), 
+        numberOfHashFunctions(_k), 
+        w(_w)
+    {   
+        cout << "Constructing Lsh...\n";
+
+        // create hash tables
+        hash_tables = new HashTable<Data<T> *>*[numberOfHashTables];
+        hash_tables[0] = new HashTable<Data<T>*>(ht_Size, w, numberOfHashFunctions, vecDimension);        
     }
 
     void PrintHTs(){
@@ -112,9 +132,12 @@ public:
         output.close();
     }
 
-    ~Lsh() {
-        // for (int i = 0; i < numberOfHashTables; i++) 
-        //     delete[] hash_tables[i];
-        // delete[] hash_tables;
+    virtual ~Lsh() {
+        cout << "Destructing Lsh... " << numberOfHashTables << endl;
+        for (int i = 0; i < numberOfHashTables; i++) {
+            delete hash_tables[i];
+        }
+
+        delete [] hash_tables;
     }
 };
