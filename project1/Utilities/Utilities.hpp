@@ -11,6 +11,8 @@
 
 using namespace std;
 
+
+
 /* This function handles arguments given by the user in the need of LSH */
 int Handle_LSH_args ( int, char **, 
     string *, string *, string *,
@@ -50,8 +52,7 @@ void BruteForceNN(vector<double> qr_v,Data<T> *dataset, int data_size, vector<do
     // for every vector in dataset, calculate euclidean distance 
     for(int i = 0; i < data_size; i++) {
         double eu_dist = euclidean_dist(qr_v, dataset[i].getVector());
-
-        // push eu_dist to our brute_force_v
+        //Push eu_dist to our brute_force_v
         brute_force_v->push_back(eu_dist);
     }
 }

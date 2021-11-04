@@ -6,10 +6,8 @@
 #include <random>
 #include <climits>
 #include <math.h>
-#include <assert.h>     /* assert */
-
+#include <assert.h>     //assert.
 #include "../Utilities/Utilities.hpp"
-
 using namespace std;
 
 class HashFunction
@@ -93,3 +91,12 @@ public:
         return g;
     }
 };
+
+
+
+void printSet(Data<double>* set ,int size)
+{
+    for (int i = 0; i < size; i++) {
+        set[i].printVector();
+    }
+}

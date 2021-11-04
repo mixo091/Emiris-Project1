@@ -1,5 +1,4 @@
 #pragma once
-
 #include <vector>
 #include <iostream>
 #include <iterator>
@@ -23,12 +22,15 @@ struct Data
     void setId(const long int &item_id) { id = item_id; }
     void setVector( const T &d) {  v.push_back(d); }
     vector<T> getVector() { return v; }
-    long int getId() { return id; }
+    int getId() { return id; }
     void printVector() {
-        cout << "id = " << id << endl;
+        cout <<"id["<< id <<"] :";
         for(auto it = v.begin(); it < v.end(); it++) {
             cout << *it << " ";
         } 
         cout << endl;
+    }
+    void printVectorId() {
+        cout <<"VectorID["<< id <<"],";
     }
 };

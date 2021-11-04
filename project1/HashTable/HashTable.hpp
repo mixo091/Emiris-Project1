@@ -1,5 +1,4 @@
 #pragma once
-
 #include <iostream>
 #include <vector>
 #include <list>
@@ -8,32 +7,30 @@
 #include <assert.h>
 #include <ctime>
 #include <map>
-
 #include "../Data/Data.hpp"
 #include "../HashFunction/HashFunction.hpp"
-
 using namespace std;
-/* A bucket is a list of points in space 
- In this case as in LSH we keep the points many times
- we will have a bucket as a list of pointers in points (vectors) */
 
+// A bucketEntry is an Item of a bucket , a.ka points to a data_point */
 template <typename K>
 struct BucketEntry {
-    /* ID: used from theory as Query Trick to avoid calculating Euclidean
-    * distance, betwween query and every point in Bucket */
-    int query_trick;
-    /* This is our key */
-    K key;
+    int query_trick; //Trick for avoiding to calculate everything.
+    K key;          //The key entry.
 
     BucketEntry(K k, int ID) {
         key = k;
         query_trick = ID;
     }
-
-    void print() {
-        Data<double> *data = (Data<double> *) key;
+    //Print the bucket entry.
+    void printEntry() {
+        Data<double> *data = (Data<double>*) key;
         data->printVector();
-        cout << "ID(P) = " << query_trick << endl << endl;
+        //cout << "ID(P) = " << query_trick << endl << endl;
+    }
+    void printEntryId(){
+        Data<double> *data = (Data<double>*) key;
+        data->printVectorId();
+
     }
     int getQueryTrick() { return query_trick; }
     vector<double> getVector() { return key->v; }
@@ -45,7 +42,7 @@ template <typename K>
 struct Bucket {
     int number_of_entries;
     int id;
-    list<BucketEntry<K> *> bucket_entries; 
+    list<BucketEntry<K>*> bucket_entries; 
 
     Bucket(int i) {
         id = i;
@@ -53,20 +50,18 @@ struct Bucket {
     }
 
     void insert(K key, int ID){
-        // struct BucketEntry bucket_entry = new BucketEntry<K>(key, ID);
         bucket_entries.push_back(new BucketEntry<K>(key, ID));
-        // increase list items
-        number_of_entries++;
+        number_of_entries++; //Increase list items
     }
-
-    // void displayBucket(){
-    //     cout<<"BUCKET ["<<id<<"] :"<<endl;
-    //     for(int i=0; i < number_of_entries; i++){
-    //         typename list<K>::iterator it = bucket_entries.begin();
-    //         advance(it, i); // 'it' points to the element at index i
-    //         (*it)->printVector();
-    //     }
-    // }
+    //Display The bucket.
+    void displayBucket(){
+        cout<<"BUCKET ["<<id<<"] :"<<endl;
+        for(int i=0; i < number_of_entries; i++){
+            typename list<BucketEntry<K>*>::iterator it = bucket_entries.begin();
+            advance(it, i); // 'it' points to the element at index i
+            (*it)->printEntryId();
+        }
+    }
 };
 
 template <typename K>
@@ -79,17 +74,16 @@ class HashTable
     struct Bucket<K> **hash_table ; 
     /* Every hash table has it's own hash function */
     HashFunction *h_fun;
- K key;
+    K key;
 public:
     HashTable(int ht_size, int w, int k, int dim) 
     : table_size(ht_size) 
     {
-        // allocate the buckets.
+        //Allocate the buckets.
         hash_table = new Bucket<K>*[table_size];
         for(int i = 0; i < table_size; i++)
             hash_table[i] = NULL;
-        
-        // create the hash function
+        //Create the hash function
         h_fun = new HashFunction(w, k, dim);
     }
 
@@ -108,54 +102,50 @@ public:
         }
     }
 
-    void find_NN(Data<double> *q, map<double, int> &my_map , double *time_NN) {
-        double temp_min = INT_MAX;
+    void find_NN(Data<double> *q, map<double, int> &k_nearest_map , double *time_NN,int k) {
+        double temp_min[k];
+        cout<<k<<endl;
+            int i;
+        for(i=0; i<k; i++)
+            temp_min[i] = INT_MAX;
+        map<double,int> distance_map;
         int id = 0;
         int query_trick = 0;
+        // --- Get the bucket to be traversed. --- //
         unsigned int index = h_fun->hashValue(q->getVector(), table_size, &query_trick);
-        // this is the bucket that q vector is hashed
         struct Bucket<K> *bucket = hash_table[index];
-        // check if current bucket exist
         if(bucket != NULL) {
-            // cout << "Bucket " << bucket->id << " with " << bucket->number_of_entries \
-            //                                             << " entries." << endl;
-
-            // we need to calculate the time
-            const clock_t begin_time = clock();
-            clock_t end_time;
-            // traverse the list of Data of current bucket
+            //cout <<"Bucket to be traversed" << bucket->id <<endl;
+            //Traverse the list of Data at current bucket.
             typename std::list<BucketEntry<K> *>::iterator it;
             for (it = bucket->bucket_entries.begin(); it != bucket->bucket_entries.end(); ++it) {
-                // calculate euclidean_distance of q and every item in the list
-                if(query_trick == (*it)->getQueryTrick()) {
-
+                //if(query_trick == (*it)->getQueryTrick()) {
                     double euDist = euclidean_dist(q->getVector(), (*it)->getVector());
-                    if(euDist < temp_min) {
-                        temp_min = euDist;
-                        //  hold the id
-                        id = (*it)->getId();
-
-                        // insert in map
-                        my_map.insert(pair<double, int>(temp_min, id));
-                    }
-                } else continue;
-                
+                    distance_map.insert(pair<double, int>( euDist, (*it)->getId()));
+               // } else continue;  
             }
-            end_time = clock();
-            
-            // calculate time
-            *time_NN = double(end_time - begin_time) / CLOCKS_PER_SEC;            
+            //=== Keep the k best from the bucket.
+            int item = 0 ;
+            for (auto it = distance_map.cbegin(); it != distance_map.cend(); ++it) {
+                k_nearest_map.insert(pair<double, int>((*it).first,(*it).second));
+                //cout<<"test "<<q->getId()<<" "<<(*it).first<<" "<<(*it).second<<endl;
+                item++;
+                if(item == k){ break ;}
+            }
+         
+            distance_map.clear();
+            //Calculate time
+            //*time_NN = double(end_time - begin_time) / CLOCKS_PER_SEC;            
         }
     }
-
     void PrintHT(){
         for (int i = 0; i < table_size; ++i) {
             cout<<"++++++ BUCKET ["<<i<<"] ++++++"<<endl;
-
-            hash_table[i]->displayBucket();
+            if(hash_table[i] != NULL)
+                hash_table[i]->displayBucket();
+            
         } 
     }
-
 //     ~HashTable() {
 //         // destroy all buckets one by one
 //         for (int i = 0; i < table_size; i++) {

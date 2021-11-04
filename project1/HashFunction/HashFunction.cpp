@@ -1,7 +1,6 @@
 #include <iostream>
 #include <random>
 #include <vector>
-
 #include "HashFunction.hpp"
 
 using namespace std;
@@ -9,8 +8,7 @@ using namespace std;
 template <typename T>
 int HashFunction<T>::hfunction(vector<T> p) {
     long double product = 0;
-
-    // create a vector by normal distribution 
+    //Creating vector with noraml distribution
     vector<double> v = vector<double>(this->dim);
     normal_distribution_fun(v, 0.0, 1.0);
 
