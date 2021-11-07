@@ -2,11 +2,15 @@
 #include <vector>
 #include <unordered_map>
 #include <math.h>
+#include <random>
+#include <chrono>
 
 #include "../HashTable/HashTable.hpp"
 #include "../Utilities/Utilities.hpp"
 #include "../Data/Data.hpp"
 #include "../LSH/lsh.hpp"
+
+using namespace std::chrono;
 
 template <typename K>
 class hypercube : public Lsh<K>
@@ -27,38 +31,100 @@ public:
                                         // pow(2, _k) is the size of the table
     {
         cout << "Constructing hypercube...\n";
-
         // this is our index 
-        int bucket_num;       
+        int bucket_num = 0;       
 
         for(int i = 0; i < totalVectors; i++) {
-            bucket_num = 0;
+            // calculate index for every vertex in dataset
+            bucket_num = create_hash(dataset[i]);
 
-            // k hash_functions
-            for(int j = 0; j < this->numberOfHashFunctions; j++) {
-                
-                // compute h1.....hk
-                int h = this->hash_tables[0]->getHashFunction()->hfunction(dataset[i].getVector());
-
-                // map h value to 0 ? 1
-                int zero_or_one = coinToss();
-                f_map.insert(std::make_pair(h, zero_or_one));
-
-                // avoid bucket overflow and create our index
-                if(j != this->numberOfHashFunctions - 1)
-                    bucket_num += zero_or_one * pow(2, j);
-            }
+            // cout << "bucket_num = " << bucket_num << "-" << dataset[i].getId() << endl;
 
             // insert in hash table
             this->hash_tables[0]->insertHyperCube(&dataset[i], bucket_num);
         } 
 
-        // this->hash_tables[0]->PrintHT();
+        print_fmap();
     }
 
     ~hypercube() {
-        cout << "Destructing hypercube...\n";
+        // cout << "Destructing hypercube...\n";
         f_map.clear();
+    }
+
+    int create_hash(Data<K> dataset) {
+        /* Create hash value for the vertex given */
+
+        int result = 0;
+        int h = 0;
+
+        for(int i = 0; i < this->numberOfHashFunctions; i++) {
+            // compute h1...hk
+            h = this->hash_tables[0]->getHashFunction()->hfunction(dataset.getVector());
+            
+            int zero_or_one = coinToss();
+            f_map.insert(std::make_pair(h, zero_or_one));
+
+            if(zero_or_one == 1) result = result | zero_or_one;
+
+            // avoid overflow
+            if(i < this->numberOfHashFunctions - 1 )
+                result *= 2;
+        }
+        return result;
+    }
+
+    int cube_hasing(Data<K> dataset) {
+        /* Find bucket of hypercube for the vertex given */
+
+        int result = 0;
+        // temp values of h1....hk
+        int h = 0;
+
+        for(int i = 0; i < this->numberOfHashFunctions; i++) {
+            // compute h1...hk
+            h = this->hash_tables[0]->getHashFunction()->hfunction(dataset.getVector());
+
+            // cout << "h = " << h << endl;
+
+            // check if h value maps to 0 ? 1
+            int zero_or_one = f_map.at(h);
+
+            if(zero_or_one == 1) result = result | zero_or_one;
+
+            // avoid overflow
+            if(i < this->numberOfHashFunctions - 1 )
+                result *= 2;
+        }
+        return result;
+    }
+
+    std::vector<int> get_neigbors_by_distance(int query_vertex, int diff, int maxDim) {
+        /* Returns an array of distances diff, of query vertex with every
+        possible vertex */
+        std::vector<int> possible_neighbors;
+        
+        for(int i = 0; i < pow(2, maxDim); i++) {
+            if(hammingDistance(i, query_vertex) == diff) {
+                possible_neighbors.push_back(i);
+            }
+        }
+
+        random_device rd;
+        mt19937 g(rd());
+        shuffle(possible_neighbors.begin(), possible_neighbors.end(), g);
+
+        int count_probes = 0;
+        // from every neigbor choose randomly
+        std::vector<int> final_neighbors;
+        for(int j = final_neighbors.size(); 
+            j < probes && count_probes < possible_neighbors.size(); 
+            j++, count_probes++)
+         {
+            final_neighbors.push_back(possible_neighbors[count_probes]);
+        }
+
+        return final_neighbors;
     }
 
     void ANN(Data<K> *qr_data, int qr_lines, Data<K> *in_data, int in_dataSize, int N, const string &out_file) {
@@ -71,26 +137,71 @@ public:
         // for every query
         for(int i = 0; i < qr_lines; i++) {
 
-            double time_hcube = 0.0; // timer for Hypercube
-            double time_BF = 0.0; // timer for brute force search
+            std::vector<int> neighbors;
 
-            unsigned int bucket_num = 0;
-
-            for(int j = 0; j < this->numberOfHashFunctions; j++) {
-                int h = this->hash_tables[0]->getHashFunction()->hfunction(qr_data[i].getVector());
-
-                // check if h value maps to 0 ? 1
-                int zero_or_one = f_map.at(h);
-
-                cout << "h = " << h << " with value " << zero_or_one << endl;
-                    
-                if(j != this->numberOfHashFunctions - 1)
-                    bucket_num += zero_or_one * pow(2, j);
-            }
-            cout << "bucket_num = " << bucket_num << endl;
-            // check the bucket of hash table
+            map<double, int> my_map;
+            // this is the final map
+            map<double, int> result_map;
+    
+            unsigned int bucket_num = cube_hasing(qr_data[i]);
+           
+            auto start = high_resolution_clock::now();
             
+            int maxDim = this->numberOfHashFunctions;
+            for(int j = 1; j < maxDim; j++) {
+                // cout << "Hamming Distance-" << j << " neibors\n";
+                neighbors = get_neigbors_by_distance(bucket_num, j, maxDim);
+
+                this->hash_tables[0]->find_NN(&qr_data[i], my_map, N, neighbors, bucket_num, &M);
+
+                for (auto it = my_map.cbegin(); it != my_map.cend(); ++it) {
+                    result_map.insert(pair<double, int>((*it).first, (*it).second));        
+                }
+                my_map.clear();
+
+                // need to stop searching, used instead of flag
+                if(M == -1) break;
+            }
+            auto stop = high_resolution_clock::now();
+            auto durationCube = duration_cast<microseconds>(stop - start);   
+
+            auto startBF = high_resolution_clock::now();
+
+            // vector used for brute force
+            vector<double> brute_force_v;
+
+            //Brute force method for NN
+            BruteForceNN(qr_data[i].getVector(), in_data, in_dataSize, &brute_force_v);
+
+            // sort brute force vector
+            sort(brute_force_v.begin(), brute_force_v.end());
+  
+            // keep the N-th distance of NN of the sorted vector
+            // double bf_nearestNeighbor = brute_force_v.at(N-1);
+            auto stopBF = high_resolution_clock::now();
+            auto durationBF = duration_cast<microseconds>(stopBF - startBF);
+
+            int n_ostos = 0;
+            output << "\nQuery: " << qr_data[i].getId();
+
+            for (auto it = result_map.cbegin(); it != result_map.cend(); ++it) {
+                if(++n_ostos == N) {
+
+                    output<< "\nNearest neighbor-" << N << ": " << (*it).second \ 
+                    << "\ndistanceCube: " << (*it).first \ 
+                    << "\ndistanceTrue: " << brute_force_v.at(N-1) \
+                    << "\ntCube: " << durationCube.count() \
+                    << "\ntTrue:" << durationBF.count();
+                  
+                    break;
+                }
+            }
+            result_map.clear();
+            brute_force_v.clear();
+
+            cout << endl;
         }
+        output.close();
     }
 
     void print_fmap() {

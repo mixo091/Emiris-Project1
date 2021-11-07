@@ -46,7 +46,7 @@ public:
         normal_distribution_fun(&t, 0.0, (double) w);
 
         // calculate M , needed for modular operation
-        M = pow(2, 32 ) - 5;
+        M = (int) (pow(2, 32 ) - 5);
     }
 
     ~HashFunction() {

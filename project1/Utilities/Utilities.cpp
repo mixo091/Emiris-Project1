@@ -72,10 +72,11 @@ void arg_handling(int argc, char **argv, string *in, string *qr, string *o,
     for(int i = 5; i < argc; i++) {
         if(strcmp(argv[i], "-k") == 0) *k = atoi(argv[i + 1]);
         else if(strcmp(argv[i], "-L") == 0) *L_or_M = atoi(argv[i+1]);
+        else if(strcmp(argv[i], "-M") == 0) *L_or_M = atoi(argv[i+1]);
         else if(strcmp(argv[i], "-N") == 0) *N = atoi(argv[i+1]);
         else if(strcmp(argv[i], "-R") == 0) *R = atoi(argv[i+1]);
         else if(strcmp(argv[i], "-o") == 0) *o = argv[i+1];
-        else if(strcmp(argv[i], "-probes") == 0) *probes = atoi(argv[i]); 
+        else if(strcmp(argv[i], "-probes") == 0) *probes = atoi(argv[i+1]); 
     }
     if(o->empty()) {
         cerr << "No output file given.";
@@ -213,9 +214,20 @@ int coinToss() {
   
         /* declaring normal distribution object 'distN' and initializing its mean and standard deviation fields. */
         /* Mean and standard deviation are distribution parameters of Normal distribution. Here, we have used mean=5, and standard deviation=2. You can take mean and standard deviation as per your choice */
-    uniform_int_distribution<int> distN(-0, 1);
+    uniform_int_distribution<int> distN(0, 1);
 
     return distN(e);
 }
 
+int hammingDistance(int n1, int n2){
+    int x = n1 ^ n2;
+    int setBits = 0;
+
+    while (x > 0) {
+        setBits += x & 1;
+        x >>= 1;
+    }
+
+    return setBits;
+}
 

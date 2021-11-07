@@ -100,3 +100,6 @@ void BruteForceNN(vector<double> qr_v,Data<T> *dataset, int data_size, vector<do
 
 /* Simple coin toss function return 0 or 1 for hypercube implementation */
 int coinToss();
+
+/* Calculate hamming distance of two verices for hypercube */
+int hammingDistance(int, int);

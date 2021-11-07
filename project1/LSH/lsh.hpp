@@ -50,7 +50,7 @@ public:
         numberOfHashFunctions(_k), 
         w(_w)
     {   
-        cout << "Constructing Lsh...\n";
+        // cout << "Constructing Lsh...\n";
 
         // create hash tables
         hash_tables = new HashTable<Data<T> *>*[numberOfHashTables];
@@ -133,7 +133,7 @@ public:
     }
 
     virtual ~Lsh() {
-        cout << "Destructing Lsh... " << numberOfHashTables << endl;
+        // cout << "Destructing Lsh... " << numberOfHashTables << endl;
         for (int i = 0; i < numberOfHashTables; i++) {
             delete hash_tables[i];
         }

@@ -7,8 +7,8 @@
 int main(int argc, char **argv) {
     std::string input_f, query_f, output_f;
     // default values
-    int k = 14, M = 10, probes = 2, N = 1, R = 10000;
-    int w = 400;
+    int k = 14, M = 10, probes = 4, N = 1, R = 10000;
+    int w = 4000;
     // vector dim
     int vectorDim = 0;
     // total vectors

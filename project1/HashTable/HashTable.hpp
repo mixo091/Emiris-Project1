@@ -93,7 +93,7 @@ public:
     HashTable(int ht_size, int w, int k, int dim) 
     : table_size(ht_size) 
     {
-        cout << "Constructing hash table with size " << table_size << endl;
+        // cout << "Constructing hash table with size " << table_size << endl;
         // allocate the buckets.
         hash_table = new Bucket<K>*[table_size];
         for(int i = 0; i < table_size; i++)
@@ -140,9 +140,7 @@ public:
         struct Bucket<K> *bucket = hash_table[index];
         // check if current bucket exist
         if(bucket != NULL) {
-            // cout << "Bucket " << bucket->id << " with " << bucket->number_of_entries \
-            //                                             << " entries." << endl;
-
+            
             // we need to calculate the time
             const clock_t begin_time = clock();
             clock_t end_time;
@@ -172,6 +170,93 @@ public:
         }
     }
 
+    void find_NN(Data<double> *q, map<double, int> &k_nearest_map,int k, vector<int> neighbors, unsigned int current_bucket_num, int *M) {
+        /* find NN for Hypercube checking current_bucket_num at first and if needed, every other neighbor*/
+
+        map<double,int> distance_map;
+        
+        // amount of data searched must be <= M
+        int count_items = 0; 
+        bool stop_searching = false;
+
+        // check hamming distance = 0 at first
+        struct Bucket<K> *bucket = hash_table[current_bucket_num];
+        if(bucket != NULL) {
+            // cout << " not null bucket " << endl;
+            // traverse the list of Data at current bucket.
+            typename std::list<BucketEntry<K> *>::iterator it;
+            for (it = bucket->bucket_entries.begin(); it != bucket->bucket_entries.end(); ++it) {
+                    
+                double euDist = euclidean_dist(q->getVector(), (*it)->getVector());
+                distance_map.insert(pair<double, int>( euDist, (*it)->getId())); 
+
+                // cout << "euDist of " << (*it)->getId() << " " << euDist << endl;
+
+                if(++count_items >= *M) {
+                    stop_searching = true;
+                    break;
+                }
+
+                cout << "count_items = " << count_items << endl;
+                        
+            }
+
+            // keep the k best from the bucket.
+            int item = 0 ;
+            for (auto it = distance_map.cbegin(); it != distance_map.cend(); ++it) {
+                k_nearest_map.insert(pair<double, int>((*it).first,(*it).second));
+
+                // if k reached, stop adding new neigbor
+                if(++item >= k) break;
+            }
+            distance_map.clear();   
+
+            // stop searching
+            if(stop_searching) {cout << "counting " << count_items << endl; *M = -1; return; }
+        }   
+        // keep searching, M is not reached yet
+        // cout << "search in neigbors: size" << neighbors.size()<<endl;
+        
+        for(int i = 0; i < (int)neighbors.size(); i++) {
+            
+            // cout << "neigbor-"<<neighbors.at(i) << endl;
+            // traverse the vector of neighbors
+            struct Bucket<K> *bucket = hash_table[neighbors.at(i)];
+            if(bucket != NULL) {
+            
+            // traverse the list of Data at current bucket.
+                typename std::list<BucketEntry<K> *>::iterator it;
+                for (it = bucket->bucket_entries.begin(); it != bucket->bucket_entries.end(); ++it) {
+                    
+                    double euDist = euclidean_dist(q->getVector(), (*it)->getVector());
+                    distance_map.insert(pair<double, int>( euDist, (*it)->getId())); 
+
+                    // cout << "euDist of " << (*it)->getId() << " " << euDist << endl;
+
+                    if(++count_items >= *M) {
+                        stop_searching = true;
+                        break;
+                    }
+                        
+                }
+
+                // keep the k best from the bucket.
+                int item = 0 ;
+                for (auto it = distance_map.cbegin(); it != distance_map.cend(); ++it) {
+                    k_nearest_map.insert(pair<double, int>((*it).first,(*it).second));
+
+                    // if k reached, stop adding new neigbor
+                    if(++item >= k) break;
+                }
+                distance_map.clear();   
+
+                // stop searching
+                if(stop_searching) {cout << "counting " << count_items << endl; *M = -1; return; }
+            } 
+        }
+
+    }
+
     void PrintHT(){
         for (int i = 0; i < table_size; ++i) {
             cout<<"++++++ BUCKET ["<<i<<"] ++++++"<<endl;
@@ -182,7 +267,7 @@ public:
     }
 
     ~HashTable() {
-        cout << "Destructing Hashtable..." << endl;
+        // cout << "Destructing Hashtable..." << endl;
         Bucket<K> *temp = NULL;
         for(int i = 0; i < table_size; i++) {
 

@@ -14,4 +14,4 @@ Utilities.o: ./Utilities/Utilities.cpp ./Utilities/Utilities.hpp
 	g++ -c -g3 -Wall ./Utilities/Utilities.cpp
 
 clean:
-	rm -rf *.o lsh cube
+	rm -rf *.o lsh cube out out_cube
