@@ -3,51 +3,48 @@
 #include <string.h>
 #include <sstream>
 #include <fstream>
-#include "./Utilities/Utilities.h"
-#include "./LSH/lsh.h"
-//#include "./VectorList/VectorList.h"
+
+#include "./Utilities/Utilities.hpp"
+#include "./LSH/lsh.hpp"
+#include "./HashTable/HashTable.hpp"
 
 using namespace std;
+
 int main(int argc, char **argv){
 
     string input_file, out_file, qr_file;
-    int k, L, N, R;
+    int k = 5, L = 7, N = 1, R = 10000, w = 4000;
     int totalVectors = 0; //Total points in space
-    int Dimension = 0;
+    int dimension = 0;
+    int queryLines = 0, qrVectorDim;
     std::cout <<"Project starts..."<<endl;
-    /*Space is a list of vectors that represents 
-    the points at the Space with dimension <Dimension> */ 
-    //Handling the args for The LSH. 
+
+    // Handling the args for The LSH. 
     int err_no = Handle_LSH_args(argc, argv, &input_file,&qr_file, &out_file, &k, &L, &N, &R);
     if(err_no <= 0 ) {
         cerr << "Something wrong with arguments!";
         exit(err_no);
     } 
-    //Checking input.
-    cout<<"Files :: Input file: "<<input_file<<" Output file: "<<out_file<<" Query file:"<<qr_file<<endl;
-    cout<<"k:"<<k<<" L:"<<L<<" N:"<<N<<" R:"<<R<<endl;
 
-    //Get the data(points) given
-    Data* dataset = parseData(input_file, Dimension, totalVectors);
+    // Get the dimension of a vector and the total amount of data
+    calc_dimensions(&totalVectors, &dimension, &input_file);
 
-    /*Space is a list of vectors that represents 
-    the points at the Space with dimension <Dimension> */ 
+    Data<double> dataset[totalVectors];
+    parseData(input_file, dimension, dataset);
 
-    VectorList* Space = VectorList_Init(Dimension);
-    vector<int> vector1 = {3,5,6,7};
-    VectorList_Insert(&Space,vector1);
-    vector<int> vector2 = {323,55,643,437};
-    VectorList_Insert(&Space,vector2);
-    vector<int> vector3 = {34,65,621,75};
-    VectorList_Insert(&Space,vector3);
-    vector<int> vector4 = {13,15,16,37};
-    VectorList_Insert(&Space,vector4);
-    vector<int> vector5 = {4243,353,56,37};
-    VectorList_Insert(&Space,vector5);
-    VectorList_Print(Space);
+    // Initialise our lsh structure
+    Lsh<double> lsh = Lsh<double>(L, totalVectors, dimension, k, w, dataset);
 
-    HashTable ht = HashTable(10);
-    ht.DisplayHT();
+    // Read from query file
+    calc_dimensions(&queryLines, &qrVectorDim, &qr_file);
+    assert(qrVectorDim == dimension);
+    
+    Data<double> qr_data[queryLines];
+    parseData(qr_file, qrVectorDim, qr_data);
+    
+    // Execute query search
+    lsh.ANN(qr_data, queryLines, dataset, totalVectors, N, out_file);
+
     return 0 ;
 }
 
