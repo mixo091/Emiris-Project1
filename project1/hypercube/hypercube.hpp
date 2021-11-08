@@ -37,7 +37,6 @@ public:
         for(int i = 0; i < totalVectors; i++) {
             // calculate index for every vertex in dataset
             bucket_num = create_hash(dataset[i]);
-
             // cout << "bucket_num = " << bucket_num << "-" << dataset[i].getId() << endl;
 
             // insert in hash table
@@ -101,9 +100,9 @@ public:
 
     std::vector<int> get_neigbors_by_distance(int query_vertex, int diff, int maxDim) {
         /* Returns an array of distances diff, of query vertex with every
-        possible vertex */
+        *  possible vertex 
+        */
         std::vector<int> possible_neighbors;
-        
         for(int i = 0; i < pow(2, maxDim); i++) {
             if(hammingDistance(i, query_vertex) == diff) {
                 possible_neighbors.push_back(i);
@@ -117,6 +116,7 @@ public:
         int count_probes = 0;
         // from every neigbor choose randomly
         std::vector<int> final_neighbors;
+
         for(int j = final_neighbors.size(); 
             j < probes && count_probes < possible_neighbors.size(); 
             j++, count_probes++)
@@ -128,19 +128,20 @@ public:
     }
 
     void ANN(Data<K> *qr_data, int qr_lines, Data<K> *in_data, int in_dataSize, int N, const string &out_file) {
+        /* Aproximate NN. For every query create his neighbours with the help of hamming distance.
+        * Hamming distance is calculated for every dimension from i=1,...,k. 
+        * We check the bucket of hashed query at first, and then we move into the neighbours vector */
         ofstream output(out_file);
         if(!output.is_open()) {
             cout << "Error with output file\n";
             exit(-1);
         }
 
-        // for every query
         for(int i = 0; i < qr_lines; i++) {
 
             std::vector<int> neighbors;
-
+            // maps for the output
             map<double, int> my_map;
-            // this is the final map
             map<double, int> result_map;
     
             unsigned int bucket_num = cube_hasing(qr_data[i]);
@@ -149,7 +150,6 @@ public:
             
             int maxDim = this->numberOfHashFunctions;
             for(int j = 1; j < maxDim; j++) {
-                // cout << "Hamming Distance-" << j << " neibors\n";
                 neighbors = get_neigbors_by_distance(bucket_num, j, maxDim);
 
                 this->hash_tables[0]->find_NN(&qr_data[i], my_map, N, neighbors, bucket_num, &M);
@@ -166,7 +166,6 @@ public:
             auto durationCube = duration_cast<microseconds>(stop - start);   
 
             auto startBF = high_resolution_clock::now();
-
             // vector used for brute force
             vector<double> brute_force_v;
 
@@ -176,14 +175,11 @@ public:
             // sort brute force vector
             sort(brute_force_v.begin(), brute_force_v.end());
   
-            // keep the N-th distance of NN of the sorted vector
-            // double bf_nearestNeighbor = brute_force_v.at(N-1);
             auto stopBF = high_resolution_clock::now();
             auto durationBF = duration_cast<microseconds>(stopBF - startBF);
 
             int n_ostos = 0;
             output << "\nQuery: " << qr_data[i].getId();
-
             for (auto it = result_map.cbegin(); it != result_map.cend(); ++it) {
                 if(++n_ostos == N) {
 
@@ -198,8 +194,6 @@ public:
             }
             result_map.clear();
             brute_force_v.clear();
-
-            cout << endl;
         }
         output.close();
     }
@@ -207,7 +201,7 @@ public:
     void print_fmap() {
         for(auto &it : f_map){
             cout<< it.first << " : " << it.second << endl;
-}
+        }
     }
 
 };
