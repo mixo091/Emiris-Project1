@@ -177,7 +177,6 @@ void normal_distribution_fun(double *n, float x, float y) {
     /* declaring normal distribution object 'distN' and initializing its mean and standard deviation fields. */
     /* Mean and standard deviation are distribution parameters of Normal distribution. Here, we have used mean=5, and standard deviation=2. You can take mean and standard deviation as per your choice */
     normal_distribution<double> distN(x, y);
-
     *n  = distN(e);
 }
 
@@ -185,7 +184,6 @@ int modular_pow(int base, int exponent, int modulus)
 {
     int result = 1;
     base = base % modulus;
-
     while (exponent > 0)
     {
         if(exponent & 1)

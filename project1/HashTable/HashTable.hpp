@@ -5,6 +5,7 @@
 #include <list>
 #include <iterator>
 #include <bits/stdc++.h>
+
 #include <assert.h>
 #include <ctime>
 #include <map>
@@ -76,12 +77,14 @@ struct Bucket {
         if(!bucket_entries.empty())
             for(auto &it : bucket_entries)
                 it->key->printVector();
+
     }
 };
 
 template <typename K>
 class HashTable
 {   
+
     /* Number of buckets */
     int buckets;
     /* Hash table size */
@@ -89,17 +92,19 @@ class HashTable
     struct Bucket<K> **hash_table ; 
     /* Every hash table has it's own hash function */
     HashFunction *h_fun;
+
 public:
     HashTable(int ht_size, int w, int k, int dim) 
     : table_size(ht_size) 
     {
+
         // cout << "Constructing hash table with size " << table_size << endl;
         // allocate the buckets.
         hash_table = new Bucket<K>*[table_size];
+
         for(int i = 0; i < table_size; i++)
-            hash_table[i] = NULL;
-        
-        // create the hash function
+            hash_table[i] = NULL; 
+        //Creating the hash function
         h_fun = new HashFunction(w, k, dim);
     }
 
@@ -275,13 +280,14 @@ public:
 
             if(temp != NULL) {
                 delete temp;
+
             }
 
             hash_table[i] = NULL;
         }
-
         delete[] hash_table;
 
         delete h_fun;
     }
 };
+

@@ -21,6 +21,7 @@ protected:
     int w;
     
    HashTable<Data<T> *> **hash_tables; 
+
 public:
     // this constructor is called for LSH
     Lsh(int L, int totalVectors, int _dim, int _k, int _w, Data<T> *data)
@@ -42,6 +43,7 @@ public:
 
         }
     }
+
     // this constructor is called for Hypercube
     Lsh(int L, int _size, int _dim, int _k, int _w)
     :   numberOfHashTables(L), 
@@ -139,5 +141,6 @@ public:
         }
 
         delete [] hash_tables;
+
     }
 };
