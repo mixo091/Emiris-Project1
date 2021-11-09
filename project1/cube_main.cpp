@@ -7,8 +7,8 @@
 int main(int argc, char **argv) {
     std::string input_f, query_f, output_f;
     // default values
-    int k = 14, M = 10, probes = 4, N = 1, R = 10000;
-    int w = 4000;
+    int k = 14, M = 10, probes = 4, N = 2, R = 10000;
+    int w = 400;
     // vector dim
     int vectorDim = 0;
     // total vectors
@@ -27,7 +27,6 @@ int main(int argc, char **argv) {
     Data<double> dataset[totalVectors];
     parseData(input_f, vectorDim, dataset);
     // create dataset
-    // Data<double> *dataset = parseData(input_f, vectorDim, totalVectors);
 
     // create hypercube 
     hypercube<double> cube = hypercube<double>(probes, M, w, k, vectorDim, totalVectors, dataset);
@@ -39,7 +38,7 @@ int main(int argc, char **argv) {
     parseData(query_f, qrVectorDim, qr_data);
 
     // execute query search
-    cube.ANN(qr_data, queryLines, dataset, totalVectors, N, output_f);
+    cube.ANN(qr_data, queryLines, dataset, totalVectors, N, output_f, R);
 
     return 0;
 }

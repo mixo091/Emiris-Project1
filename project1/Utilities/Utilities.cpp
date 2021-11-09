@@ -5,6 +5,7 @@
 #include <random>
 #include <chrono>
 #include <math.h>
+#include <map>
 
 #include "Utilities.hpp"
 
@@ -207,14 +208,14 @@ unsigned long positive_modulo( unsigned long x, unsigned y) {
 }
 
 int coinToss() {
-    unsigned seed = chrono::steady_clock::now().time_since_epoch().count(); 
-    default_random_engine e (seed); 
+    random_device rd;
+	mt19937 gen(rd());
   
         /* declaring normal distribution object 'distN' and initializing its mean and standard deviation fields. */
         /* Mean and standard deviation are distribution parameters of Normal distribution. Here, we have used mean=5, and standard deviation=2. You can take mean and standard deviation as per your choice */
     uniform_int_distribution<int> distN(0, 1);
 
-    return distN(e);
+    return distN(gen);
 }
 
 int hammingDistance(int n1, int n2){
