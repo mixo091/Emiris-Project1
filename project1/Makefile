@@ -1,17 +1,23 @@
+FLAGS = -c -g3 -Wall -O3
+OBJS = *.o 
+TARGETS = cube lsh
+CC = g++
+SRC_DIR = ./src
+
 lsh: main.o Utilities.o 
-	g++ -g3 -Wall main.o Utilities.o -o lsh
+	g++ -Wall -o lsh main.o Utilities.o -O3
 
 cube: cube_main.o Utilities.o
-	g++ -g3 -Wall -O3 cube_main.o Utilities.o -o cube
+	g++ -Wall -o cube cube_main.o Utilities.o -O3
 
-cube_main.o: cube_main.cpp
-	g++ -c -g3 -Wall -O3 cube_main.cpp
+cube_main.o: ./src/cube_main.cpp
+	$(CC) $(FLAGS) ./src/cube_main.cpp
 
-main.o: main.cpp 
-	g++ -c -g3 -Wall main.cpp
+main.o: ./src/main.cpp 
+	$(CC) $(FLAGS) ./src/main.cpp
 
-Utilities.o: ./Utilities/Utilities.cpp ./Utilities/Utilities.hpp
-	g++ -c -g3 -Wall ./Utilities/Utilities.cpp
+Utilities.o: ./src/Utilities/Utilities.cpp ./src/Utilities/Utilities.hpp
+	$(CC) $(FLAGS) ./src/Utilities/Utilities.cpp
 
 clean:
-	rm -rf *.o lsh cube out out_cube
+	rm -rf $(TARGETS) $(OBJS)
