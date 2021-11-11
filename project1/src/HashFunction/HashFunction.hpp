@@ -50,7 +50,6 @@ public:
     }
 
     ~HashFunction() {
-        cout << "Destructing HashFunction...\n";
         delete [] r; delete [] h;
     }
 

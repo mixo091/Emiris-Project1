@@ -139,17 +139,12 @@ public:
         std::vector<int> temp_radius_nearest_neighbors;
     
         for(int i = 0; i < qr_lines ; i++) {
-
             int count_items_searched = 0;
             int count_probes_searched = 0;
             bool stop_searching = false;
-
             int bucket_num = cube_hashing(qr_data[i]);
            
             auto start = high_resolution_clock::now();
-
-            // cout << "for query-" << qr_data[i].getId() << " : " << bucket_num << endl;
-            
             int maxDim = this->numberOfHashFunctions;
             for(int j = 1; j < maxDim && stop_searching == false; j++) {
 
@@ -159,13 +154,10 @@ public:
                                             bucket_num, M, probes, &count_items_searched, 
                                             &count_probes_searched);
 
-                // cout << "ANN ended. mymap size = " << my_map.size() << endl << endl;
-
                 for (auto it = my_map.cbegin(); it != my_map.cend(); ++it) {
                     result_map.insert(pair<double, int>((*it).first, (*it).second));    
                 }
                 my_map.clear();
-
                 // need to stop searching, used instead of flag
                 if(count_items_searched >= M || count_probes_searched >= probes ) stop_searching = true;
             }
@@ -175,11 +167,7 @@ public:
             auto startBF = high_resolution_clock::now();
             // vector used for brute force
             vector<double> brute_force_v;
-
-            //Brute force method for NN
             BruteForceNN(qr_data[i].getVector(), in_data, in_dataSize, &brute_force_v);
-
-            // sort brute force vector
             sort(brute_force_v.begin(), brute_force_v.end());
   
             auto stopBF = high_resolution_clock::now();
@@ -189,7 +177,6 @@ public:
             count_items_searched = 0;   
             count_probes_searched = 0;
             stop_searching = false;
-
             std::vector<int> results_of_radius_nearest_neighbors_vec;
 
             // call range search 
@@ -207,24 +194,22 @@ public:
                 // need to stop searching, used instead of flag
                 if(count_items_searched >= M || count_probes_searched >= probes ) stop_searching = true;
             }
-
+            
             int n_ostos = 0;
             output << "\nQuery: " << qr_data[i].getId();
             for(auto it = result_map.cbegin(); it != result_map.cend(); ++it) {
-                
-                output<< "\nNearest neighbor-" << n_ostos + 1 << ": " << (*it).second \ 
-                << "\ndistanceCube: " << (*it).first \ 
-                << "\ndistanceTrue: " << brute_force_v.at(n_ostos) \
-                << "\ntCube: " << durationCube.count() \
+
+                output<< "\nNearest neighbor-" << n_ostos + 1 << ": " << (*it).second   \ 
+                << "\ndistanceCube: " << (*it).first    \ 
+                << "\ndistanceTrue: " << brute_force_v.at(n_ostos)  \  
+                << "\ntCube: " << durationCube.count()  \  
                 << "\ntTrue:" << durationBF.count();
                 
                 if(++n_ostos == N) {
                     output << "\nR-near neighbors :" << endl;
-
                     for(auto vec_it = results_of_radius_nearest_neighbors_vec.cbegin(); vec_it != results_of_radius_nearest_neighbors_vec.cend(); ++vec_it) {
                         output << *vec_it << endl;
                     }
-
                     if(results_of_radius_nearest_neighbors_vec.size() == 0) output << "Not found\n"; 
 
                     break;
@@ -240,13 +225,11 @@ public:
         output.close();
     }
     
-
     void print_fmap() {
         for(auto &it : f_map){
             cout<< it.first << " : " << it.second << endl;
         }
     }
-
 };
 
 

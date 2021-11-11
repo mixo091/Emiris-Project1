@@ -11,14 +11,14 @@
 
 using namespace std;
 // Function to get the args for LSH.
-int Handle_LSH_args ( 
+int lsh_parse_args ( 
     int argc, char **argv, 
     string *i_file, string *qr_file, string *o_file,
     int *k, int *L, int *N, int *R ) 
     {
     if(argc < 7) {
-        cerr << "Wrong arguments. Please try again!" << endl;
-        exit(0);
+        cerr << "Usage of : " << argv[0] << " -i <input_file> -q <query_file> -o <output_file>" << endl;
+        exit(-1);
     }
     if(strcmp(argv[1], "-i") != 0) {    
         cerr << "Please give the input file." << endl;
@@ -50,11 +50,11 @@ int Handle_LSH_args (
     return 1;
 }
 
-void arg_handling(int argc, char **argv, string *in, string *qr, string *o, 
-                        int *k, int *L_or_M, int *probes, int *N, int *R) 
+void cube_parse_args(int argc, char **argv, string *in, string *qr, string *o, 
+                int *k, int *L_or_M, int *probes, int *N, int *R) 
 {
     if(argc < 7) {
-        cout << "Usage of : " << argv[0] << " -i <input_file> -q <query_file> -o <output_file>" << endl;
+        cerr << "Usage of : " << argv[0] << " -i <input_file> -q <query_file> -o <output_file>" << endl;
         exit(-1);
     }
 
@@ -72,7 +72,6 @@ void arg_handling(int argc, char **argv, string *in, string *qr, string *o,
 
     for(int i = 5; i < argc; i++) {
         if(strcmp(argv[i], "-k") == 0) *k = atoi(argv[i + 1]);
-        else if(strcmp(argv[i], "-L") == 0) *L_or_M = atoi(argv[i+1]);
         else if(strcmp(argv[i], "-M") == 0) *L_or_M = atoi(argv[i+1]);
         else if(strcmp(argv[i], "-N") == 0) *N = atoi(argv[i+1]);
         else if(strcmp(argv[i], "-R") == 0) *R = atoi(argv[i+1]);
@@ -105,7 +104,7 @@ void calc_dimensions(int *tableSize, int *dim, string *filename)
     
     while(!input_file) {
         // user input
-        cout << "Give new input file.";
+        cout << "Give correct file.";
         
         string new_file;
         cin >> new_file;

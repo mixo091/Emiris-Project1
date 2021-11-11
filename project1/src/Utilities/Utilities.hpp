@@ -12,12 +12,12 @@
 using namespace std;
 
 /* This function handles arguments given by the user in the need of LSH */
-int Handle_LSH_args ( int, char **, 
+int lsh_parse_args( int, char **, 
     string *, string *, string *,
     int *, int *, int *, int *);
 
 /* Argument handling for hypercube and lsh */
-void arg_handling(int, char **, string *, string *,string *, int *, int *, int *, int *, int *);
+void cube_parse_args(int, char **, string *, string *,string *, int *, int *, int *, int *, int *);
 
 /* Calculation hash table size and vector dimension, given the input file */
 void calc_dimensions(int *, int *, string *);
@@ -27,7 +27,6 @@ template <typename K>
 void parseData(string filename, int dim, Data<K> *arr) {
     // open file for reading
     ifstream input_file(filename);  
-    // Data<double> *arr = new Data<double>[totalVectors];
     // we need to count the Data created
     int nVector = 0;
     if(input_file.is_open()) {

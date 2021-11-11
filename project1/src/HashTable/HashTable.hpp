@@ -96,7 +96,6 @@ public:
     HashTable(int ht_size, int w, int k, int dim) 
     : table_size(ht_size) 
     {
-
         // cout << "Constructing hash table with size " << table_size << endl;
         // allocate the buckets.
         hash_table = new Bucket<K>*[table_size];
@@ -139,54 +138,15 @@ public:
         }
     }
 
-    void find_NN(Data<double> *q, map<double, int> &my_map , double *time_NN) {
-        /* NN for lsh. We calculate euclidean distance with the use of query trick */
-
-        double temp_min = INT_MAX;
-        int id = 0;
-        int query_trick = 0;
-
-        unsigned int index = h_fun->hashValue(q->getVector(), table_size, &query_trick);
-        // this is the bucket that q vector is hashed
-        struct Bucket<K> *bucket = hash_table[index];
-        // check if current bucket exist
-        if(bucket != NULL) {
-            
-            // we need to calculate the time
-            const clock_t begin_time = clock();
-            clock_t end_time;
-            
-            // traverse the list of Data of current bucket
-            typename std::list<BucketEntry<K> *>::iterator it;
-            for (it = bucket->bucket_entries.begin(); it != bucket->bucket_entries.end(); ++it) {
-                // calculate euclidean_distance of q and every item in the list
-                if(query_trick == (*it)->getQueryTrick()) {
-
-                    double euDist = euclidean_dist(q->getVector(), (*it)->getVector());
-                    if(euDist < temp_min) {
-                        temp_min = euDist;
-                        //  hold the id
-                        id = (*it)->getId();
-
-                        // insert in map
-                        my_map.insert(pair<double, int>(temp_min, id));
-                    }
-                } else continue;
-                
-            }
-            end_time = clock();
-            
-            // calculate time
-            *time_NN = double(end_time - begin_time) / CLOCKS_PER_SEC;            
-        }
-    }
-
     void search_NN_in_radius(Data<double> *q, int current_bucket_num,
                             int probes, int *count_probes_searched,
                             int M, int *count_items_searched,
                             vector<int> &v_of_neighbors_in_radius, float radius)
     {
-        /* helper searching function to find nearest neighbors in radius */
+        /* 
+        * Helper searching function to find nearest neighbors in radius.
+        * Used in hypercube.
+        */
         bool stop_searching = false;
         std::vector<int>::iterator vec_it;
 
@@ -218,11 +178,77 @@ public:
         }
     }
 
+    void search_NN_in_radius(Data<double> *q, vector<int> &v_of_neighbors_in_radius, float radius)
+    {
+        /* 
+        * Helper searching function to find nearest neighbors in radius.
+        * Used in LSH.
+        */
+        std::vector<int>::iterator vec_it;
+        int query_trick = 0;
+        int current_bucket_num = h_fun->hashValue(q->getVector(), table_size, &query_trick);
+
+        struct Bucket<K> *bucket = hash_table[current_bucket_num];
+        if(bucket) {
+            typename std::list<BucketEntry<K> *>::iterator it;
+            for (it = bucket->bucket_entries.begin(); it != bucket->bucket_entries.end(); ++it) {
+                    
+                double euDist = euclidean_dist(q->getVector(), (*it)->getVector());                
+                if(euDist < radius) {
+                    // std::find function call
+                    vec_it = std::find (v_of_neighbors_in_radius.begin(), v_of_neighbors_in_radius.end(), (*it)->getId());
+                    if (vec_it == v_of_neighbors_in_radius.end())
+                        v_of_neighbors_in_radius.push_back((*it)->getId());
+                }
+            }
+        }
+    }
+
+    void search_NN(Data<double> *q, map<double, int> &k_nearest_map, int k)
+    {
+        /* 
+        * helper search function used in LSH in order to find k nearest neighbors
+        * and store them in a map
+        */
+        map<double, int> distance_map;
+        int query_trick = 0;
+
+        int current_bucket_num = h_fun->hashValue(q->getVector(), table_size, &query_trick);
+
+        struct Bucket<K> *bucket = hash_table[current_bucket_num];
+        if(bucket) {
+
+            // traverse the list of Data at current bucket.
+            typename std::list<BucketEntry<K> *>::iterator it;
+            for (it = bucket->bucket_entries.begin(); it != bucket->bucket_entries.end(); ++it) {
+            
+                if(query_trick == (*it)->getQueryTrick()) {
+                    double euDist = euclidean_dist(q->getVector(), (*it)->getVector());
+                    distance_map.insert(pair<double, int>(euDist, (*it)->getId()));
+                } else 
+                    continue;           
+            }
+
+            // keep the k best from the bucket.
+            int item = 0 ;
+            for (auto it = distance_map.cbegin(); it != distance_map.cend(); ++it) {
+                k_nearest_map.insert(pair<double, int>((*it).first,(*it).second));
+
+                // if k reached, stop adding new neigbor
+                if(++item >= k) break;
+            }
+            distance_map.clear();   
+        }
+    }
+
     void search_NN(Data<double> *q, int current_bucket_num, int M, int probes, int k,
                     int *count_items_searched, int *count_probes_searched,
                     map<double, int> &k_nearest_map)
     {
-        /*  helper function to find k nearest neighbors and store them in a map */
+        /*  
+        * helper function to find k nearest neighbors and store them in a map
+        * used in hypercube
+        */
         map<double, int> distance_map;
         bool stop_searching = false;
 
@@ -284,6 +310,28 @@ public:
         }
     }
 
+    
+    void find_NN(Data<double> *q, map<double, int> &k_nearest_map, int k) 
+    {
+        /* NN for lsh. We calculate euclidean distance with the use of query trick 
+        * and we keep the best-k pair of <eu_dist, id> from every bucket  in  map
+        */
+        search_NN(q, k_nearest_map, k);   
+        
+    }
+
+    vector<int> range_search(Data<double> *data, float radius) 
+    {
+        /*
+        * Performing range search for LSH.
+        * Returnin a vector of id's with eu_dist < radius.
+        */
+        vector<int> rad_nearest_neighbors;
+        search_NN_in_radius(data, rad_nearest_neighbors, radius);
+
+        return rad_nearest_neighbors;
+    }
+
     vector<int> range_search(Data<double> *data, int bucket_num, 
                     int probes, int *count_probes_searched, 
                     int M, int *count_items_searched, 
@@ -292,6 +340,7 @@ public:
         /*  
         *   Performing range search, adding every vertex with distance < radius in a vector of distances.
         *   Returing a vector of id's.
+        *   Used in hypeprcube.
         */
         vector<int> rad_nearest_neighbors;
         bool stop_searching = false;
