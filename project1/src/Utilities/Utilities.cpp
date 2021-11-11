@@ -5,19 +5,20 @@
 #include <random>
 #include <chrono>
 #include <math.h>
+#include <map>
 
 #include "Utilities.hpp"
 
 using namespace std;
 // Function to get the args for LSH.
-int Handle_LSH_args ( 
+int lsh_parse_args ( 
     int argc, char **argv, 
     string *i_file, string *qr_file, string *o_file,
     int *k, int *L, int *N, int *R ) 
     {
     if(argc < 7) {
-        cerr << "Wrong arguments. Please try again!" << endl;
-        exit(0);
+        cerr << "Usage of : " << argv[0] << " -i <input_file> -q <query_file> -o <output_file>" << endl;
+        exit(-1);
     }
     if(strcmp(argv[1], "-i") != 0) {    
         cerr << "Please give the input file." << endl;
@@ -49,11 +50,11 @@ int Handle_LSH_args (
     return 1;
 }
 
-void arg_handling(int argc, char **argv, string *in, string *qr, string *o, 
-                        int *k, int *L_or_M, int *probes, int *N, int *R) 
+void cube_parse_args(int argc, char **argv, string *in, string *qr, string *o, 
+                int *k, int *L_or_M, int *probes, int *N, int *R) 
 {
     if(argc < 7) {
-        cout << "Usage of : " << argv[0] << " -i <input_file> -q <query_file> -o <output_file>" << endl;
+        cerr << "Usage of : " << argv[0] << " -i <input_file> -q <query_file> -o <output_file>" << endl;
         exit(-1);
     }
 
@@ -71,7 +72,6 @@ void arg_handling(int argc, char **argv, string *in, string *qr, string *o,
 
     for(int i = 5; i < argc; i++) {
         if(strcmp(argv[i], "-k") == 0) *k = atoi(argv[i + 1]);
-        else if(strcmp(argv[i], "-L") == 0) *L_or_M = atoi(argv[i+1]);
         else if(strcmp(argv[i], "-M") == 0) *L_or_M = atoi(argv[i+1]);
         else if(strcmp(argv[i], "-N") == 0) *N = atoi(argv[i+1]);
         else if(strcmp(argv[i], "-R") == 0) *R = atoi(argv[i+1]);
@@ -83,45 +83,6 @@ void arg_handling(int argc, char **argv, string *in, string *qr, string *o,
         exit(-1);    
     }
 }
-
-// void parseData(string filename, int dim, Data<double> *arr) {
-//     // open file for reading
-//     ifstream input_file(filename);  
-//     // Data<double> *arr = new Data<double>[totalVectors];
-//     // we need to count the Data created
-//     int nVector = 0;
-//     if(input_file.is_open()) {
-//         string str;
-//         while(getline(input_file, str)) {
-//             // we need a counter for vector dimensions
-//             int i = 0;
-//             istringstream ss(str);
-//             // we need to seperate coordinates and store them in a vector container
-//             // store id
-//             string id;
-//             getline(ss, id, ' ');  
-//             arr[nVector].setId(stoi(id));
-
-//             string x_ij;
-//             while(getline(ss, x_ij, ' ')) {
-//                 // not a whitespace char
-//                 if(isspace(x_ij.at(0)) == 0)
-//                     if(i++ < dim) {
-//                         // let's set our data
-//                         arr[nVector].setVector(stod(x_ij));
-//                     }
-//             }
-//             nVector++;
-//         }
-//     } else {
-//         cerr << "Unable to open file" << endl;
-//         exit(-1);
-//     }
-//     // close the file 
-//     input_file.close();
-
-//     // return arr;
-// }
 
 int getVectorDim(string str) {
     stringstream ss(str);
@@ -143,7 +104,7 @@ void calc_dimensions(int *tableSize, int *dim, string *filename)
     
     while(!input_file) {
         // user input
-        cout << "Give new input file.";
+        cout << "Give correct file.";
         
         string new_file;
         cin >> new_file;
@@ -207,14 +168,14 @@ unsigned long positive_modulo( unsigned long x, unsigned y) {
 }
 
 int coinToss() {
-    unsigned seed = chrono::steady_clock::now().time_since_epoch().count(); 
-    default_random_engine e (seed); 
+    random_device rd;
+	mt19937 gen(rd());
   
         /* declaring normal distribution object 'distN' and initializing its mean and standard deviation fields. */
         /* Mean and standard deviation are distribution parameters of Normal distribution. Here, we have used mean=5, and standard deviation=2. You can take mean and standard deviation as per your choice */
     uniform_int_distribution<int> distN(0, 1);
 
-    return distN(e);
+    return distN(gen);
 }
 
 int hammingDistance(int n1, int n2){
