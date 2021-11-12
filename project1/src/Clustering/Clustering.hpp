@@ -15,7 +15,8 @@
 #include <fstream>
 #include "../Data/Data.hpp"
 #define NONE -1
-#define MAX_ITERATIONS 200
+#define MIN_CHANGE 0
+#define MAX_ITERATIONS 150
 #define FIRST 0 
 #define LAST MAX_ITERATIONS-1
 #define MIDDLE (MAX_ITERATIONS - 1)/2
@@ -83,8 +84,9 @@ public:
         Cluster_items.clear();
         number_of_items = 0;
     }
-    void CalculateCentroid(){
-
+    int CalculateCentroid(){
+        vector<double> old_centroid = centroid;
+        int ClusterChange = 0;
         int dimension = centroid.size();
         for(int i =0 ; i < dimension ;i++){
             centroid.at(i) = 0.0;
@@ -93,8 +95,11 @@ public:
                  sum = sum + (*it)->v.at(i);
             }
             centroid.at(i) = sum/number_of_items;
-   
+            ClusterChange = ClusterChange + abs(int(old_centroid.at(i)) - (sum/number_of_items));
         }
+        old_centroid.clear();
+        cout<<"ClusterChange:"<<ClusterChange<<endl;
+        return ClusterChange;
     }
 
 };
@@ -184,7 +189,7 @@ class Clustering {
                 }
 
 
-                cout<<"maxDist: "<<maxDist<<endl;
+                //cout<<"maxDist: "<<maxDist<<endl;
                 P[0] = 0;
                 for (int j = 1; j <TotalDataItems; j++)
                 {
@@ -207,7 +212,7 @@ class Clustering {
 
                 uniform_real_distribution<double> unif(0.0, P[TotalDataItems-1]);
                 double x = unif(RandomEn);
-                cout<<"x:"<<x<<endl;
+                //cout<<"x:"<<x<<endl;
 
                 int nextCentroid;
                 for (int p = 1; p < TotalDataItems; p++)
@@ -218,7 +223,7 @@ class Clustering {
                         break;
                     }
                 }
-                cout<<"NextCentoid: "<<nextCentroid<<endl;
+                //cout<<"NextCentoid: "<<nextCentroid<<endl;
                 Clusters[i]->SetCenter(DataSet[nextCentroid].v,DataSet[nextCentroid].id);
                 
             }
@@ -231,20 +236,21 @@ class Clustering {
 
 
         void Loyds_Clustering(){
+            int ClusterChange ;
+            int TotalClusteringChange =  MIN_CHANGE + 1;
             ofstream FirstIteration("iteration0.txt");
             ofstream LastIteration("iterationN.txt");
             FirstIteration.clear();
             LastIteration.clear();
+            auto start = chrono::high_resolution_clock::now();
             // === Kmeans++ - Initialize Centroids === //
             K_means_plusplus();
             PrintClusters();
-
-            /*
-            GenerateCentroids();
             int iteration = 0;
             bool StopCreteria = false;
-            while (iteration < MAX_ITERATIONS)
+            while (iteration < MAX_ITERATIONS && TotalClusteringChange > MIN_CHANGE)
             {   // cout<<"ok"<<endl;
+                TotalClusteringChange = 0;
                 if((iteration == FIRST) || (iteration == MIDDLE) || (iteration==LAST))
                     cout<<"ITERATION "<<iteration<<endl;
                 // === Clear Clusters === // 
@@ -263,9 +269,9 @@ class Clustering {
                     }
                     //Assign to Apropriate Cluster Based on L2 ===//
                     auto it = L2fromClusters.cbegin();
-                    cout<<(*it).second<<endl;
+                    //cout<<(*it).second<<endl;
                     int ClusterToBeAssigned = (*it).second ;
-                     if((iteration == FIRST) || (iteration==LAST)){
+                     if((iteration == FIRST) || (iteration==LAST )){
                          if(iteration==FIRST){
                              FirstIteration<<"ITEM ID : "<<DataSet[i].id<<" --- Assigned to CLUSTER --------- "<<ClusterToBeAssigned<<endl;
                          }else{
@@ -285,17 +291,17 @@ class Clustering {
                 }
                 // === Recalculate Centroids Based  on the Reassignment. ===//
                 for(int i =0 ; i< ClustersNum; i++){
-                    Clusters[i]->CalculateCentroid();
+                    ClusterChange =0 ;
+                    ClusterChange = Clusters[i]->CalculateCentroid();
+                    TotalClusteringChange += ClusterChange;
                 }
-                //PrintClusters();
-                
+                //cout<<"ClusteringChange: "<<TotalClusteringChange<<endl;
                 iteration++;
                 }
 
                 FirstIteration.close();
                 LastIteration.close();
-            */
-
+                cout<<"Total Iterations :: "<<iteration<<endl;
         }
 
         void Lsh_Clustering(){

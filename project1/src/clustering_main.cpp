@@ -12,7 +12,7 @@ int main(int argc, char **argv){
     string input_file, out_file, qr_file;
     int totalVectors = 0; //Total points in space.
     int dimension = 0;    //Space Dimension.
-    input_file = "./test_files/input_xs";
+    input_file = "./test_files/input_small_id";
     int ClustersNum = 6;
 
     //=== Calculate d-space info based on the input file . ===//
@@ -24,5 +24,6 @@ int main(int argc, char **argv){
     Clustering<Data<double>> clustering =Clustering<Data<double>>(ClustersNum,dataset,totalVectors);
     //clustering.PrintClusters();
     clustering.Loyds_Clustering();
+    clustering.PrintClusters();
     return 0;
 }
