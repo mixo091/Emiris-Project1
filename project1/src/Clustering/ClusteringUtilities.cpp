@@ -47,7 +47,7 @@ Data<double>* parseData(string filename, int dim, int totalVectors) {
 }
 
 
-int getVectorDim(string str) {
+int getVectorDim1(string str) {
     stringstream ss(str);
     string temp;
     int countDim = 0;
@@ -69,7 +69,7 @@ void CalculateInfo(int *tableSize, int *dim, string filename)
         while(getline(input_file, str)) {
             if(flag) {
                 flag = false;
-                *dim = getVectorDim(str);
+                *dim = getVectorDim1(str);
             }
             (*tableSize)++;    
         }

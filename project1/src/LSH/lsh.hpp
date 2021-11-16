@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <vector>
 #include <map>
@@ -7,8 +8,8 @@
 #include "../Data/Data.hpp"
 #include "../HashTable/HashTable.hpp"
 #include "../HashFunction/HashFunction.hpp"
-
-#define BUCKET_DIVIDER 16
+#include "../Utilities/Utilities.hpp"
+#define BUCKET_DIVIDER 8
 
 using namespace std;
 using namespace std::chrono;
@@ -166,6 +167,26 @@ public:
         }
         // close output file
         output.close();
+    }
+
+
+
+    vector<int> ReverseAssignment(vector<double>centroid,int id ,double R){
+        //Result items in Range
+        std::vector<int> results_of_radius_nearest_neighbors_vec;
+        //in Range in hash Table
+        std::vector<int> temp_radius_nearest_neighbors;
+
+        for(int j = 0; j < numberOfHashTables; j++) {
+        temp_radius_nearest_neighbors = hash_tables[j]->clustering_range_search(centroid,id, R);
+        std::copy(temp_radius_nearest_neighbors.begin(), 
+        temp_radius_nearest_neighbors.end(), 
+        std::back_inserter(results_of_radius_nearest_neighbors_vec));
+
+        }
+
+        return results_of_radius_nearest_neighbors_vec;
+
     }
 
     virtual ~Lsh() {

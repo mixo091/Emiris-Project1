@@ -14,6 +14,10 @@ struct Data
     long int id;
     vector<T> v;
 
+    public:
+        int  Clustered_already_by = -1;
+        double ClusteredInRadius ;
+
     Data() {
         id = -1;
     }
@@ -30,5 +34,9 @@ struct Data
             cout << *it << ",";
         } 
         cout << endl;
+    }
+    void PrintID(){
+        cout<<"item_id:"<<id<<endl;
+        return ;
     }
 };

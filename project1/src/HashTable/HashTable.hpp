@@ -1,5 +1,5 @@
-#pragma once
 
+#pragma once
 #include <iostream>
 #include <vector>
 #include <list>
@@ -42,6 +42,8 @@ struct BucketEntry {
     }
     int getQueryTrick() { return query_trick; }
     vector<double> getVector() { return key->v; }
+    int get_mark_status (){ return key->assigned_to;}
+    void mark(int clustered_to){key->assigned_to = clustered_to;}
     int getId() { return key->id; }
 };
 
@@ -76,7 +78,7 @@ struct Bucket {
         // cout<<"BUCKET ["<<id<<"] :"<<endl;
         if(!bucket_entries.empty())
             for(auto &it : bucket_entries)
-                it->key->printVector();
+                it->key->PrintID();
 
     }
 };
@@ -116,13 +118,17 @@ public:
         // this is used from theory as query trick
         int query_trick = 0;
         unsigned int index = h_fun->hashValue(key->getVector(), table_size, &query_trick);
-      
        // check size of index
         assert(index <= INT_MAX);
 
-        if(hash_table[index] != NULL) hash_table[index]->insert(key, query_trick);
+        if(hash_table[index] != NULL) {
+           // key->PrintID();
+            //cout<<"ASSIGNED TO BUCKET"<<index<<endl;
+            hash_table[index]->insert(key, query_trick); }
         else {
             // create new Bucket and insert key
+           // key->PrintID();
+            //cout<<"ASSIGNED TO BUCKET"<<index<<endl;
             hash_table[index] = new Bucket<K>(index);
             hash_table[index]->insert(key, query_trick);
         }
@@ -166,6 +172,52 @@ public:
                         v_of_neighbors_in_radius.push_back((*it)->getId());
                 }
 
+                if(++(*count_items_searched) >= M) {
+                    stop_searching = true;
+                    break;
+                } 
+            }
+            // check the bucket in which query is hashed
+            if(++(*count_probes_searched) >= probes) stop_searching = true;
+
+            if(stop_searching) return;
+        }
+    }
+
+
+
+    void search_NN_in_radius_cluster(vector<double> *q,int id , int current_bucket_num,
+                            int probes, int *count_probes_searched,
+                            int M, int *count_items_searched,
+                            vector<int> &v_of_neighbors_in_radius, double R)
+    {
+        /* 
+        * Helper searching function to find nearest neighbors in radius.
+        * Used in hypercube.
+        */
+        bool stop_searching = false;
+        std::vector<int>::iterator vec_it;
+
+        struct Bucket<K> *bucket = hash_table[current_bucket_num];
+        if(bucket) {
+
+            // traverse the list of Data at current bucket.
+            typename std::list<BucketEntry<K> *>::iterator it;
+            for (it = bucket->bucket_entries.begin(); it != bucket->bucket_entries.end(); ++it) {
+
+
+                if( ((*it)->key->Clustered_already_by== -1) || ( ((*it)->key->ClusteredInRadius == R)  && ((*it)->key->Clustered_already_by != id) ) ){  
+                    double euDist = euclidean_dist(*q, (*it)->getVector());            
+                    if(euDist < R) {  
+                        (*it)->key->Clustered_already_by = id;
+                        (*it)->key->ClusteredInRadius = R;
+                        vec_it = std::find (v_of_neighbors_in_radius.begin(), v_of_neighbors_in_radius.end(), (*it)->getId());
+                        if (vec_it == v_of_neighbors_in_radius.end())
+                            v_of_neighbors_in_radius.push_back((*it)->getId());
+                    
+                    }
+                }
+                //-------------------------------
                 if(++(*count_items_searched) >= M) {
                     stop_searching = true;
                     break;
@@ -320,6 +372,36 @@ public:
         
     }
 
+    vector<int> clustering_range_search(vector<double>  centroid,int id,double R){
+        vector<int> v_of_neighbors_in_radius;
+        //-----------------------------------------------------//
+        std::vector<int>::iterator vec_it;
+        int query_trick = 0;
+        int current_bucket_num = h_fun->hashValue(centroid, table_size, &query_trick);
+        struct Bucket<K> *bucket = hash_table[current_bucket_num];
+        if(bucket) {
+            typename std::list<BucketEntry<K> *>::iterator it;
+            for (it = bucket->bucket_entries.begin(); it != bucket->bucket_entries.end(); ++it) {
+                double euDist = euclidean_dist(centroid, (*it)->getVector()); 
+                if( ((*it)->key->Clustered_already_by== -1) || ( ((*it)->key->ClusteredInRadius == R)  && ((*it)->key->Clustered_already_by != id) ) ){              
+                    if(euDist < R) {  
+                        (*it)->key->Clustered_already_by = id;
+                        (*it)->key->ClusteredInRadius = R;
+                        vec_it = std::find (v_of_neighbors_in_radius.begin(), v_of_neighbors_in_radius.end(), (*it)->getId());
+                        if (vec_it == v_of_neighbors_in_radius.end())
+                            v_of_neighbors_in_radius.push_back((*it)->getId());
+                    
+                }
+
+
+                }
+            }
+        }
+        //---------------------------------------------------------//
+         return v_of_neighbors_in_radius;
+
+    }
+
     vector<int> range_search(Data<double> *data, float radius) 
     {
         /*
@@ -331,6 +413,48 @@ public:
 
         return rad_nearest_neighbors;
     }
+
+
+     vector<int> clustering_range_search(vector<double>*  centroid,int id,double R,int bucket_num, 
+                    int probes, int *count_probes_searched, 
+                    int M, int *count_items_searched,vector<int> neighbors){
+
+        vector<int> v_of_neighbors_in_radius;
+        //-----------------------------------------------------//
+        std::vector<int>::iterator vec_it;
+        int query_trick = 0;
+        vector<int> rad_nearest_neighbors;
+        bool stop_searching = false;
+        
+        search_NN_in_radius_cluster(centroid,id, bucket_num,
+                        probes, count_probes_searched,
+                        M, count_items_searched,
+                        rad_nearest_neighbors, R);
+
+        
+        if(*count_items_searched >= M|| *count_probes_searched >= probes) stop_searching = true;
+
+        // range search is done for every neighbor
+        for(size_t i = 0; i < neighbors.size() && stop_searching == false; i++) {
+
+            search_NN_in_radius_cluster(centroid,id, bucket_num,
+                probes, count_probes_searched,
+                M, count_items_searched,
+                rad_nearest_neighbors, R);
+
+
+            if(*count_items_searched >= M|| *count_probes_searched >= probes) stop_searching = true;
+        }
+
+        return rad_nearest_neighbors;
+    }
+
+
+
+
+
+
+
 
     vector<int> range_search(Data<double> *data, int bucket_num, 
                     int probes, int *count_probes_searched, 
@@ -375,6 +499,22 @@ public:
                 hash_table[i]->displayBucket();
         } 
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     ~HashTable() {
         // cout << "Destructing Hashtable..." << endl;

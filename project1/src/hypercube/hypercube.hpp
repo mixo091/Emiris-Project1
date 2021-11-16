@@ -68,6 +68,7 @@ public:
             return found->second; 
     }
 
+
     int cube_hashing(Data<K> dataset) {
         /* Find bucket of hypercube for the vertex given */
 
@@ -82,11 +83,40 @@ public:
             // check if h value maps to 0 ? 1
             int zero_or_one = check_key(h);
 
+           if (zero_or_one == 1) {
+            result |= 1;
+            }
+
+            // We don't want the last shift to take place
+            if (i < this->numberOfHashFunctions-1)
+                result <<= 1;
+
+        }
+        return result;
+    }
+
+    int cube_hashing(vector<double> q) {
+        /* Find bucket of hypercube for the vertex given */
+
+        int result = 0;
+        // temp values of h1....hk
+        int h = 0;
+
+        for(int i = 0; i < this->numberOfHashFunctions; i++) {
+            // compute h1...hk
+            h = this->hash_tables[0]->getHashFunction()->hfunction(q);
+
+            // check if h value maps to 0 ? 1
+            int zero_or_one = check_key(h);
+
             // to avoid overflow
             result += zero_or_one * pow(2, this->numberOfHashFunctions - i -1);
         }
         return result;
     }
+
+
+
 
     std::vector<int> get_neigbors_by_distance(int query_vertex, int diff, int maxDim) {
         /* Returns an array of distances diff, of query vertex with every
@@ -230,6 +260,43 @@ public:
             cout<< it.first << " : " << it.second << endl;
         }
     }
+
+
+
+
+vector<int> ReverseAssignment(vector<double> centroid,int id ,double R,int probes ,int M ){
+        //Result items in Range
+        int count_probes_searched = 0;
+        int count_items_searched = 0;
+        vector<int> neighbors;
+        bool stop_searching = false;
+        int maxDim = this->numberOfHashFunctions;
+        std::vector<int> results_of_radius_nearest_neighbors_vec;
+        //in Range in hash Table
+        std::vector<int> temp_radius_nearest_neighbors;
+        int bucket_num = cube_hashing(centroid);
+        for(int dim = 1; dim < maxDim && stop_searching == false; dim++) {
+
+                neighbors = get_neigbors_by_distance(bucket_num, dim, maxDim);
+
+                temp_radius_nearest_neighbors = this->hash_tables[0]->clustering_range_search(&centroid, id, R,bucket_num, 
+                    probes, &count_probes_searched, 
+                    M, &count_items_searched,neighbors);
+                std::copy(temp_radius_nearest_neighbors.begin(), 
+                        temp_radius_nearest_neighbors.end(), 
+                        std::back_inserter(results_of_radius_nearest_neighbors_vec));
+
+                // need to stop searching, used instead of flag
+                if(count_items_searched >= M || count_probes_searched >= probes ) stop_searching = true;
+            }
+
+            return results_of_radius_nearest_neighbors_vec;
+
+    }
+
+    
+
+
 };
 
 

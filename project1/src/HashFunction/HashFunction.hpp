@@ -6,6 +6,7 @@
 #include <random>
 #include <climits>
 #include <math.h>
+#include <vector>
 #include <assert.h>     /* assert */
 
 #include "../Utilities/Utilities.hpp"

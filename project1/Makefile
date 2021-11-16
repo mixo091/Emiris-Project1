@@ -10,8 +10,8 @@ lsh: main.o Utilities.o
 cube: cube_main.o Utilities.o
 	g++ -Wall -o cube cube_main.o Utilities.o -O3
 
-cluster: clustering_main.o  ClusteringUtilities.o
-	g++ -Wall -o cluster clustering_main.o  ClusteringUtilities.o -O3
+cluster: clustering_main.o  ClusteringUtilities.o Utilities.o
+	g++ -Wall -o cluster clustering_main.o ClusteringUtilities.o Utilities.o -O3
 
 cube_main.o: ./src/cube_main.cpp
 	$(CC) $(FLAGS) ./src/cube_main.cpp
